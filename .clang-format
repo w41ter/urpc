@@ -3,3 +3,5 @@ Language:        Cpp
 BasedOnStyle:  Google
 ColumnLimit:     80
 TabWidth:        8
+IndentWidth:     4
+AccessModifierOffset: -4
