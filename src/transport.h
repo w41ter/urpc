@@ -27,7 +27,10 @@ class Transport : public IOHandler {
 public:
     Transport() {}
     Transport(int fd) : fd_(fd) {}
-    virtual ~Transport() = 0;
+    Transport(const Transport&) = delete;
+    Transport& operator=(const Transport&) = delete;
+
+    ~Transport() override;
 
     int StartRead();
     int StartWrite(Controller* cntl, IOBuf buf);

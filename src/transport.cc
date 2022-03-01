@@ -21,6 +21,8 @@
 
 namespace urpc {
 
+Transport::~Transport() { Reset(); }
+
 void Transport::Reset() {
     write_buf_.reset();
     read_buf_.reset();

@@ -14,15 +14,19 @@
 
 #pragma once
 
+#include "endpoint.h"
 #include "transport.h"
 
 namespace urpc {
 
 class ConnectTransport : public Transport {
 public:
+    ConnectTransport(butil::EndPoint endpoint) : endpoint_(endpoint){};
     ~ConnectTransport() override;
 
 protected:
+    void Reset() override;
+    int DoWrite() override;
     int HandleWriteEvent() override;
 
 private:
@@ -31,6 +35,7 @@ private:
 
     bool connected_;
     bool connecting_;
+    butil::EndPoint endpoint_;
 };
 
 }  // namespace urpc
