@@ -46,6 +46,12 @@ public:
         fd_ = -1;
     }
 
+    int release() {
+        int fd = fd_;
+        fd_ = -1;
+        return fd;
+    }
+
     operator int() const noexcept { return fd_; }
 
 private:
