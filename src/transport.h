@@ -25,26 +25,24 @@ namespace urpc {
 
 class Transport : public IOHandler {
 public:
+    Transport() {}
+    Transport(int fd) : fd_(fd) {}
     virtual ~Transport() = 0;
-
-    virtual int OnWriteDone() = 0;
-    virtual int OnRead(IOBuf* buf) = 0;
 
     int StartRead();
     int StartWrite(Controller* cntl, IOBuf buf);
 
+    int fd() const override { return fd_; }
+    void Reset() override;
+
 protected:
     virtual int DoWrite();
+    virtual int OnWriteDone() = 0;
+    virtual int OnRead(IOBuf* buf) = 0;
 
     int HandleReadEvent() override;
     int HandleWriteEvent() override;
 
-private:
-    enum Flags : unsigned { POLLIN = 1 << 0, POLLOUT = 1 << 1 };
-
-    int fd() const override { return fd_; }
-
-    unsigned flags_;
     OwnedFD fd_;
     IOBuf read_buf_;
     IOBuf write_buf_;

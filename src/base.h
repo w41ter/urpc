@@ -26,6 +26,16 @@ public:
 
     virtual int HandleReadEvent() = 0;
     virtual int HandleWriteEvent() = 0;
+
+    virtual void Reset() = 0;
+
+    bool poll_in() const noexcept { return flags_ & kPollIn; }
+    bool poll_out() const noexcept { return flags_ & kPollOut; }
+
+private:
+    enum : unsigned { kPollIn = 1 << 0, kPollOut = 1 << 1 };
+
+    unsigned flags_;
 };
 
 }  // namespace urpc
