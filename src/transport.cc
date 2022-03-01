@@ -15,20 +15,39 @@
 #include "transport.h"
 
 #include <assert.h>
+#include <errno.h>
 
 #include "poller.h"
 
 namespace urpc {
 
+void Transport::Reset() {
+    write_buf_.reset();
+    read_buf_.reset();
+
+    if (current_cntl_) {
+        // TODO
+        current_cntl_->SetFailed(-1, "reset");
+        current_cntl_ = nullptr;
+    }
+
+    for (auto&& [cntl, buf] : pending_writes_) {
+        cntl->SetFailed(-1, "reset");
+    }
+    pending_writes_.clear();
+
+    fd_.reset();
+}
+
 int Transport::StartRead() {
-    if (!(flags_ & Flags::POLLIN)) {
-        flags_ |= Flags::POLLIN;
+    if (!poll_in()) {
         Poller::singleton()->AddPollIn(this);
     }
+
     return 0;
 }
 
-int Transport::StartWrite(Controller *cntl, IOBuf buf) {
+int Transport::StartWrite(Controller* cntl, IOBuf buf) {
     assert(!buf.empty());
 
     if (current_cntl_) {
@@ -56,7 +75,7 @@ int Transport::HandleReadEvent() {
             else if (errno != EAGAIN) {
                 assert(false && "unknown error");
             } else {
-                assert(flags_ & Flags::POLLIN);
+                assert(poll_in());
                 break;
             }
         } else if (n == 0) {
@@ -79,8 +98,7 @@ int Transport::HandleWriteEvent() {
             else if (errno != EAGAIN)
                 assert(false && "unknown error");
             else {
-                if (!(flags_ & Flags::POLLOUT))
-                    Poller::singleton()->AddPollOut(this);
+                if (!poll_out()) Poller::singleton()->AddPollOut(this);
                 break;
             }
         }

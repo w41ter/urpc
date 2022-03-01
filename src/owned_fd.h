@@ -27,7 +27,7 @@ public:
     OwnedFD(const OwnedFD&) = delete;
     OwnedFD(OwnedFD&& rhs) : fd_(rhs.fd_) { rhs.fd_ = -1; }
     ~OwnedFD() {
-        if (fd_ > 0) {
+        if (fd_ >= 0) {
             close(fd_);
         }
     }
@@ -39,7 +39,12 @@ public:
         return *this;
     }
 
-    void reset() { fd_ = 0; }
+    void reset() {
+        if (fd_ >= 0) {
+            close(fd_);
+        }
+        fd_ = -1;
+    }
 
     operator int() const noexcept { return fd_; }
 
