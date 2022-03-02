@@ -9,6 +9,7 @@ set(FILES
     controller.cc
     client_call.cc
     server_call.cc
+    acceptor.cc
     )
 
 add_library(urpc ${FILES})

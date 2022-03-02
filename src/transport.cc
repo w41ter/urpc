@@ -107,7 +107,8 @@ int Transport::HandleWriteEvent() {
 
         if (write_buf_.empty()) {
             write_buf_.reset();
-            OnWriteDone();
+            OnWriteDone(current_cntl_);
+            current_cntl_ = nullptr;
 
             if (!pending_writes_.empty()) {
                 current_cntl_ = pending_writes_.front().first;

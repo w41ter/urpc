@@ -15,16 +15,18 @@
 #pragma once
 
 #include "connect_transport.h"
+#include "endpoint.h"
 #include "iobuf.h"
 
 namespace urpc {
 
 class ClientTransport : public ConnectTransport {
 public:
+    ClientTransport(butil::EndPoint endpoint) : ConnectTransport(endpoint) {}
     ~ClientTransport() override;
 
 protected:
-    int OnWriteDone() override;
+    int OnWriteDone(Controller* cntl) override;
     int OnRead(IOBuf* buf) override;
 };
 

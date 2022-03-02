@@ -20,10 +20,11 @@ namespace urpc {
 
 class ServerTransport : public Transport {
 public:
+    ServerTransport(int fd) : Transport(fd) {}
     ~ServerTransport() override;
 
 protected:
-    int OnWriteDone() override;
+    int OnWriteDone(Controller* cntl) override;
     int OnRead(IOBuf* buf) override;
 };
 

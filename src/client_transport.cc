@@ -20,10 +20,7 @@ namespace urpc {
 
 ClientTransport::~ClientTransport() {}
 
-int ClientTransport::OnWriteDone() {
-    LOG(FATAL) << "TODO";
-    return 0;
-}
+int ClientTransport::OnWriteDone(Controller* cntl) { return 0; }
 
 int ClientTransport::OnRead(IOBuf* buf) {
     LOG(FATAL) << "TODO";
