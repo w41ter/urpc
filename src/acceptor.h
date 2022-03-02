@@ -17,7 +17,7 @@
 
 namespace urpc {
 
-class Acceptor : public IOHandler {
+class Acceptor : public IOHandle {
 public:
     Acceptor(int listen_fd) : listen_fd_(listen_fd) {}
     ~Acceptor() override;

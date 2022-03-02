@@ -22,11 +22,12 @@ class Poller {
 public:
     static Poller* singleton();
 
-    virtual ~Poller() = 0;
+    virtual ~Poller() = default;
 
     virtual int PollOnce() = 0;
-    virtual int AddPollIn(IOHandler*) = 0;
-    virtual int AddPollOut(IOHandler*) = 0;
+    virtual int AddPollIn(IOHandle*) = 0;
+    virtual int AddPollOut(IOHandle*) = 0;
+    virtual int RemoveConsumer(IOHandle*) = 0;
 };
 
 }  // namespace urpc

@@ -18,9 +18,11 @@ namespace urpc {
 
 enum ErrCode : int {};
 
-class IOHandler {
+class IOHandle {
+    friend class IOHandleAccessor;
+
 public:
-    virtual ~IOHandler() {}
+    virtual ~IOHandle() {}
 
     virtual int fd() const = 0;
 
@@ -36,6 +38,19 @@ private:
     enum : unsigned { kPollIn = 1 << 0, kPollOut = 1 << 1 };
 
     unsigned flags_;
+};
+
+class IOHandleAccessor {
+public:
+    IOHandleAccessor(IOHandle* handle) : handle_(handle) {}
+
+    void SetPollIn() { handle_->flags_ |= IOHandle::kPollIn; }
+    void SetPollOut() { handle_->flags_ |= IOHandle::kPollOut; }
+    void ClearPollIn() { handle_->flags_ &= ~IOHandle::kPollIn; }
+    void ClearPollOut() { handle_->flags_ &= ~IOHandle::kPollOut; }
+
+private:
+    IOHandle* handle_;
 };
 
 }  // namespace urpc

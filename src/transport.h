@@ -23,7 +23,7 @@
 
 namespace urpc {
 
-class Transport : public IOHandler {
+class Transport : public IOHandle {
 public:
     Transport() {}
     Transport(int fd) : fd_(fd) {}
