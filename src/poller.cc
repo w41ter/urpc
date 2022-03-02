@@ -16,16 +16,8 @@
 
 namespace urpc {
 
-Poller* Poller::singleton() {
-    // TODO(w41ter)
-    return nullptr;
-}
+extern Poller* poller();
 
-class Looper {
-public:
-    virtual ~Looper() = 0;
-
-    virtual int LoopOnce() = 0;
-};
+Poller* Poller::singleton() { return poller(); }
 
 }  // namespace urpc
