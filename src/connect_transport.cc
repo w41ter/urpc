@@ -25,6 +25,8 @@
 
 namespace urpc {
 
+ConnectTransport::~ConnectTransport() {}
+
 int ConnectTransport::DoWrite() {
     if (ConnectIfNot() == 0) {
         HandleWriteEvent();

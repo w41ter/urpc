@@ -10,6 +10,7 @@ set(FILES
     client_call.cc
     server_call.cc
     acceptor.cc
+    poller.cc
     )
 
 add_library(urpc ${FILES})

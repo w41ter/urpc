@@ -13,3 +13,4 @@ add_compile_options(-fPIC)
 
 include(cmake/FetchThirdParty.cmake)
 add_subdirectory(src)
+add_subdirectory(test)
