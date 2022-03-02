@@ -16,7 +16,13 @@
 
 namespace urpc {
 
-enum ErrCode : int {};
+enum ErrCode : int {
+    ERR_OK = 0,
+    /// The payloads isn't enough to parse.
+    ERR_TOO_SMALL = 1001,
+    /// The header of payloads is different with the protocol header.
+    ERR_MISMATCH = 1002,
+};
 
 class IOHandle {
     friend class IOHandleAccessor;
