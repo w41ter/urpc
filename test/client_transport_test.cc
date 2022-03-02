@@ -12,30 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#pragma once
+#include <gtest/gtest.h>
 
-namespace urpc {
-
-enum ErrCode : int {};
-
-class IOHandler {
-public:
-    virtual ~IOHandler() {}
-
-    virtual int fd() const = 0;
-
-    virtual int HandleReadEvent() = 0;
-    virtual int HandleWriteEvent() = 0;
-
-    virtual void Reset() = 0;
-
-    bool poll_in() const noexcept { return flags_ & kPollIn; }
-    bool poll_out() const noexcept { return flags_ & kPollOut; }
-
-private:
-    enum : unsigned { kPollIn = 1 << 0, kPollOut = 1 << 1 };
-
-    unsigned flags_;
-};
-
-}  // namespace urpc
+TEST(test_suite_name, test_name) {}

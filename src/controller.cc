@@ -20,6 +20,12 @@ namespace urpc {
 
 Controller::~Controller() {}
 
+void Controller::Reset() {
+    error_code_ = 0;
+    error_text_.clear();
+    completed_ = false;
+}
+
 void Controller::StartCancel() { LOG(FATAL) << "Not Supported"; }
 
 void Controller::SetFailed(const std::string& reason) {
