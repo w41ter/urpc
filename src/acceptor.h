@@ -12,20 +12,25 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "server_transport.h"
-
-#include <glog/logging.h>
+#include "base.h"
+#include "owned_fd.h"
 
 namespace urpc {
 
-int ServerTransport::OnWriteDone(Controller* cntl) {
-    LOG(FATAL) << "TODO";
-    return 0;
-}
+class Acceptor : public IOHandler {
+public:
+    Acceptor(int listen_fd) : listen_fd_(listen_fd) {}
+    ~Acceptor() override;
 
-int ServerTransport::OnRead(IOBuf* buf) {
-    LOG(FATAL) << "TODO";
-    return 0;
-}
+    int fd() const override { return listen_fd_; }
+
+    int HandleReadEvent() override;
+    int HandleWriteEvent() override;
+
+    void Reset() override;
+
+private:
+    OwnedFD listen_fd_;
+};
 
 }  // namespace urpc

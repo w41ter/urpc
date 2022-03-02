@@ -40,7 +40,7 @@ public:
 
 protected:
     virtual int DoWrite();
-    virtual int OnWriteDone() = 0;
+    virtual int OnWriteDone(Controller* cntl) = 0;
     virtual int OnRead(IOBuf* buf) = 0;
 
     int HandleReadEvent() override;
