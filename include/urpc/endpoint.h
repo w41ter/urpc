@@ -19,14 +19,13 @@
 
 // Wrappers of IP and port.
 
-#ifndef BUTIL_ENDPOINT_H
-#define BUTIL_ENDPOINT_H
+#pragma once
 
 #include <netinet/in.h>  // in_addr
 
 #include <iostream>  // std::ostream
 
-namespace butil {
+namespace urpc {
 
 // Type of an IP address
 typedef struct in_addr ip_t;
@@ -128,35 +127,29 @@ int get_local_side(int fd, EndPoint* out);
 // Get the other end of a socket connection
 int get_remote_side(int fd, EndPoint* out);
 
-}  // namespace butil
+}  // namespace urpc
 
 // Since ip_t is defined from in_addr which is globally defined, due to ADL
 // we have to put overloaded operators globally as well.
-inline bool operator<(butil::ip_t lhs, butil::ip_t rhs) {
-    return butil::ip2int(lhs) < butil::ip2int(rhs);
+inline bool operator<(urpc::ip_t lhs, urpc::ip_t rhs) {
+    return urpc::ip2int(lhs) < urpc::ip2int(rhs);
 }
-inline bool operator>(butil::ip_t lhs, butil::ip_t rhs) { return rhs < lhs; }
-inline bool operator>=(butil::ip_t lhs, butil::ip_t rhs) {
-    return !(lhs < rhs);
+inline bool operator>(urpc::ip_t lhs, urpc::ip_t rhs) { return rhs < lhs; }
+inline bool operator>=(urpc::ip_t lhs, urpc::ip_t rhs) { return !(lhs < rhs); }
+inline bool operator<=(urpc::ip_t lhs, urpc::ip_t rhs) { return !(rhs < lhs); }
+inline bool operator==(urpc::ip_t lhs, urpc::ip_t rhs) {
+    return urpc::ip2int(lhs) == urpc::ip2int(rhs);
 }
-inline bool operator<=(butil::ip_t lhs, butil::ip_t rhs) {
-    return !(rhs < lhs);
-}
-inline bool operator==(butil::ip_t lhs, butil::ip_t rhs) {
-    return butil::ip2int(lhs) == butil::ip2int(rhs);
-}
-inline bool operator!=(butil::ip_t lhs, butil::ip_t rhs) {
-    return !(lhs == rhs);
-}
+inline bool operator!=(urpc::ip_t lhs, urpc::ip_t rhs) { return !(lhs == rhs); }
 
-inline std::ostream& operator<<(std::ostream& os, const butil::IPStr& ip_str) {
+inline std::ostream& operator<<(std::ostream& os, const urpc::IPStr& ip_str) {
     return os << ip_str.c_str();
 }
-inline std::ostream& operator<<(std::ostream& os, butil::ip_t ip) {
-    return os << butil::ip2str(ip);
+inline std::ostream& operator<<(std::ostream& os, urpc::ip_t ip) {
+    return os << urpc::ip2str(ip);
 }
 
-namespace butil {
+namespace urpc {
 // Overload operators for EndPoint in the same namespace due to ADL.
 inline bool operator<(EndPoint p1, EndPoint p2) {
     return (p1.ip != p2.ip) ? (p1.ip < p2.ip) : (p1.port < p2.port);
@@ -176,6 +169,4 @@ inline std::ostream& operator<<(std::ostream& os, const EndPointStr& ep_str) {
     return os << ep_str.c_str();
 }
 
-}  // namespace butil
-
-#endif  // BUTIL_ENDPOINT_H
+}  // namespace urpc

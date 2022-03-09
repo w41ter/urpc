@@ -16,15 +16,18 @@
 
 #include <glog/logging.h>
 
+#include "client_transport.h"
+
 using namespace google::protobuf;
 
 namespace urpc {
 
 void ClientCall::OnComplete() { LOG(FATAL) << "Not implemented"; }
 
-void ClientCall::IssueRPC(const MethodDescriptor* method,
-                          RpcController* controller, const Message* request,
-                          Message* response, Closure* done) {
+void ClientCall::IssueRPC(ClientTransport* transport,
+                          const MethodDescriptor* method,
+                          const Message* request, Message* response,
+                          Closure* done) {
     LOG(FATAL) << "Not implemented";
 }
 

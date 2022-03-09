@@ -25,3 +25,4 @@ endfunction()
 
 urpc_test(client_transport_test.cc)
 urpc_test(echo_test.cc)
+urpc_test(server_test.cc)

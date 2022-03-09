@@ -11,30 +11,35 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+
 #pragma once
 
 #include <google/protobuf/service.h>
 
-#include "controller.h"
-#include "iobuf.h"
+#include <memory>
+
+#include "endpoint.h"
 
 namespace urpc {
 
-class ClientTransport;
-class ClientCall : public Controller {
+// Represent server's ownership of services.
+enum ServiceOwnership { SERVER_OWNS_SERVICE, SERVER_DOESNT_OWN_SERVICE };
+
+class ServerImpl;
+
+class Server {
 public:
-    ~ClientCall() override = default;
+    Server();
+    ~Server();
 
-    void OnComplete() override;
+    int Start(EndPoint ip_port);
+    int Run();
 
-    virtual void IssueRPC(ClientTransport* transport,
-                          const google::protobuf::MethodDescriptor* method,
-                          const google::protobuf::Message* request,
-                          google::protobuf::Message* response,
-                          google::protobuf::Closure* done);
+    int AddService(google::protobuf::Service* service,
+                   ServiceOwnership ownership);
 
-    // Invoke if OK. Otherwise Failed is setted.
-    virtual int ProcessResponse(const IOBuf& response) = 0;
+private:
+    std::unique_ptr<ServerImpl> impl_;
 };
 
 }  // namespace urpc

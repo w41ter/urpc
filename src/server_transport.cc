@@ -37,7 +37,7 @@ int ServerTransport::OnRead(IOBuf* buf) {
 
     int code = ERR_MISMATCH;
     if (protocol_)
-        code = protocol_->ParseRequest(*buf, &raw_call);
+        code = protocol_->ParseRequest(buf, &raw_call);
     if (code == ERR_MISMATCH) {
         protocol_ = ProtocolManager::singleton()->ProbeProtocol(*buf);
         if (!protocol_) {
@@ -46,7 +46,7 @@ int ServerTransport::OnRead(IOBuf* buf) {
         }
     }
 
-    code = protocol_->ParseRequest(*buf, &raw_call);
+    code = protocol_->ParseRequest(buf, &raw_call);
     if (code != ERR_OK) {
         if (code == ERR_TOO_SMALL)
             return 0;

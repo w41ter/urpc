@@ -47,7 +47,7 @@ protected:
     int HandleWriteEvent() override;
 
     OwnedFD fd_;
-    IOBuf read_buf_;
+    IOPortal read_buf_;
     IOBuf write_buf_;
     Controller* current_cntl_;
     std::deque<std::pair<Controller*, IOBuf>> pending_writes_;

@@ -18,10 +18,10 @@
 #include <glog/logging.h>
 #include <sys/socket.h>
 #include <sys/types.h>
+#include <urpc/endpoint.h>
 
 #include <utility>
 
-#include "endpoint.h"
 #include "owned_fd.h"
 #include "poller.h"
 

@@ -12,31 +12,24 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#pragma once
+syntax = "proto3";
 
-#include <urpc/endpoint.h>
+package urpc.protocol.urpc;
 
-#include "transport.h"
+message RPCMeta {
+    RequestMeta request = 1;
+    ResponseMeta response = 2;
+    int64 correlation_id = 3;
+    int32 attachment_size = 4;
+}
 
-namespace urpc {
+message RequestMeta {
+    string service_name = 1;
+    string method_name = 2;
+    int64 log_id = 3;
+}
 
-class ConnectTransport : public Transport {
-public:
-    ConnectTransport(EndPoint endpoint) : endpoint_(endpoint){};
-    ~ConnectTransport() override;
-
-protected:
-    void Reset(int code, std::string reason) override;
-    int DoWrite() override;
-    int HandleWriteEvent() override;
-
-private:
-    int ConnectIfNot();
-    int OnConnect();
-
-    bool connected_;
-    bool connecting_;
-    EndPoint endpoint_;
-};
-
-}  // namespace urpc
+message ResponseMeta {
+    int32 error_code = 1;
+    optional string error_text = 2;
+}

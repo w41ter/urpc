@@ -17,15 +17,34 @@
 #include <gtest/gtest.h>
 #include <urpc/channel.h>
 #include <urpc/controller.h>
+#include <urpc/server.h>
+
+#include <memory>
+
+using namespace google::protobuf;
 
 using namespace urpc;
 using namespace test;
 
-class EchoServiceImpl : EchoService {
+class EchoServiceImpl : public EchoService {
 public:
+    ~EchoServiceImpl() override {}
+
+    void Echo(RpcController* controller, const EchoRequest* request,
+              EchoResponse* response, Closure* done) override;
 };
 
-void RunEchoService() {}
+void EchoServiceImpl::Echo(RpcController* controller,
+                           const EchoRequest* request, EchoResponse* response,
+                           Closure* done) {
+    LOG(FATAL) << "Not implemented";
+}
+
+void RunEchoService() {
+    auto service = std::make_unique<EchoServiceImpl>();
+    Server server;
+    server.AddService(service.release(), ServiceOwnership::SERVER_OWNS_SERVICE);
+}
 
 void HandleEchoResponse(Controller* cntl, EchoResponse* response) {
     std::unique_ptr<Controller> cntl_guard(cntl);
@@ -42,6 +61,7 @@ void HandleEchoResponse(Controller* cntl, EchoResponse* response) {
 }
 
 TEST(EchoTest, Basic) {
+    google::InstallFailureSignalHandler();
     RunEchoService();
 
     ChannelOptions options;

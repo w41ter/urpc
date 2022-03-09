@@ -12,31 +12,24 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#pragma once
+#include <atomic>
+#include <thread>
 
-#include <urpc/endpoint.h>
-
-#include "transport.h"
-
-namespace urpc {
-
-class ConnectTransport : public Transport {
+class EchoService {
 public:
-    ConnectTransport(EndPoint endpoint) : endpoint_(endpoint){};
-    ~ConnectTransport() override;
+    ~EchoService();
+    EchoService(const EchoService&) = delete;
+    EchoService& operator=(const EchoService&) = delete;
 
-protected:
-    void Reset(int code, std::string reason) override;
-    int DoWrite() override;
-    int HandleWriteEvent() override;
+    static EchoService Bootstrap();
+    bool TryRun();
 
 private:
-    int ConnectIfNot();
-    int OnConnect();
+    EchoService(int fd);
 
-    bool connected_;
-    bool connecting_;
-    EndPoint endpoint_;
+    void run();
+
+    int fd_;
+    std::atomic_bool state_{false};
+    std::thread worker_;
 };
-
-}  // namespace urpc

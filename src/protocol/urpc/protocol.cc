@@ -15,13 +15,16 @@
 #include <glog/logging.h>
 #include <string.h>
 
+#include "../../client_transport.h"
 #include "../../coding.h"
 #include "../base.h"
 #include "../manager.h"
 #include "call.h"
+#include "urpc_meta.pb.h"
 
 namespace urpc {
 namespace protocol {
+namespace urpc {
 
 class URPCProtocol final : public BaseProtocol {
 public:
@@ -38,15 +41,12 @@ public:
 
     /// Parse the protocol response. If the payload isn't enough, ERR_TOO_SMALL
     /// is returned. If the header is mismatched, ERR_MISMATCH is returned.
-    int ParseResponse(IOBuf* buf) override {
-        LOG(FATAL) << "Not implemented";
-        return 0;
-    }
+    int ParseResponse(IOBuf* buf, ClientTransport* transport) override;
 };
 
-int URPCProtocol::ParseRequest(const IOBuf& buf, ServerCall** server_call) {
-    std::vector<uint8_t> header;
-    if (buf.peek(&header, 4) < 4) {
+int URPCProtocol::ParseRequest(IOBuf* buf, ServerCall** server_call) {
+    std::vector<uint8_t> header(0, 4);
+    if (buf->copy_to(header.data(), 4) < 4) {
         return ERR_TOO_SMALL;
     }
 
@@ -54,23 +54,63 @@ int URPCProtocol::ParseRequest(const IOBuf& buf, ServerCall** server_call) {
         return ERR_MISMATCH;
     }
 
-    IOBuf new_buf = buf.slice(4);
-    std::vector<uint8_t> len_buf;
-    if (new_buf.peek(&len_buf, 4) < 4) {
+    std::vector<uint8_t> len_buf(0, 4);
+    if (buf->copy_to(len_buf.data(), 4, 4) < 4) {
         return ERR_TOO_SMALL;
     }
 
     uint32_t length = DecodeFixed32(len_buf.data());
-    if (new_buf.size() < 4 + length) {
+    if (buf->size() < 8 + length) {
         return ERR_TOO_SMALL;
     }
 
-    IOBuf data = buf.slice(8, 8 + length);
-    *server_call = new EchoServerCall(std::move(data));
+    IOBuf data;
+    buf->pop_front(8);
+    buf->cutn(&data, length);
+    *server_call = new URPCServerCall(std::move(data));
     return ERR_OK;
 }
 
-static URPCProtocol echo_protocol(ProtocolManager::singleton());
+int URPCProtocol::ParseResponse(IOBuf* buf, ClientTransport* transport) {
+    std::vector<uint8_t> header(0, 4);
+    if (buf->copy_to(header.data(), 4) < 4) {
+        return ERR_TOO_SMALL;
+    }
 
+    if (strcmp(reinterpret_cast<const char*>(header.data()), Header())) {
+        return ERR_MISMATCH;
+    }
+
+    std::vector<uint8_t> len_buf(0, 4);
+    if (buf->copy_to(len_buf.data(), 4, 4) < 4) {
+        return ERR_TOO_SMALL;
+    }
+
+    uint32_t length = DecodeFixed32(len_buf.data());
+    if (buf->size() < 8 + length) {
+        return ERR_TOO_SMALL;
+    }
+
+    IOBuf data;
+    buf->pop_front(8);
+    buf->cutn(&data, length);
+
+    IOBufAsZeroCopyInputStream in(data);
+    RPCMeta rpc_meta;
+    rpc_meta.ParseFromZeroCopyStream(&in);
+    auto request_id = rpc_meta.correlation_id();
+    auto cntl = transport->TakeClientCall(rpc_meta.correlation_id());
+    if (!cntl) {
+        // TODO(walter) return error and close transport.
+        return -1;
+    }
+
+    data.pop_front(in.ByteCount());
+    return cntl->ProcessResponse(data);
+}
+
+static URPCProtocol urpc_protocol(ProtocolManager::singleton());
+
+}  // namespace urpc
 }  // namespace protocol
 }  // namespace urpc
