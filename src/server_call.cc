@@ -18,6 +18,6 @@
 
 namespace urpc {
 
-void ServerCall::OnComplete() { LOG(FATAL) << "Not implemented"; }
+void ServerCall::OnComplete() { delete this; }
 
 }  // namespace urpc

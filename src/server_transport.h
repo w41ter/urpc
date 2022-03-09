@@ -14,6 +14,7 @@
 
 #pragma once
 
+#include "protocol/base.h"
 #include "transport.h"
 
 namespace urpc {
@@ -26,6 +27,11 @@ public:
 protected:
     int OnWriteDone(Controller* cntl) override;
     int OnRead(IOBuf* buf) override;
+
+private:
+    /// The last successfully parsed protocol, used to optimize protocol
+    /// lookuping.
+    protocol::BaseProtocol* protocol_{nullptr};
 };
 
 }  // namespace urpc

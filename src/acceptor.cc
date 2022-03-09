@@ -48,6 +48,8 @@ int Acceptor::HandleWriteEvent() {
     return 0;
 }
 
-void Acceptor::Reset() { LOG(FATAL) << "Not supported"; }
+void Acceptor::Reset(int code, std::string reason) {
+    LOG(FATAL) << "Not supported";
+}
 
 }  // namespace urpc

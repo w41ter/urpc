@@ -42,9 +42,7 @@ public:
         size_t total_write = 0;
         while (!payloads_.empty()) {
             size_t size = std::min(payloads_.size(), cap);
-            for (size_t i = 0; i < size; ++i) {
-                buf[i] = payloads_[i];
-            }
+            for (size_t i = 0; i < size; ++i) { buf[i] = payloads_[i]; }
             int n = ::write(fd, buf, size);
             if (n > 0) {
                 for (size_t i = 0; i < n; ++i) payloads_.pop_front();
@@ -57,6 +55,50 @@ public:
     bool empty() const { return payloads_.empty(); }
 
     void reset() { payloads_.clear(); }
+
+    size_t size() const noexcept { return payloads_.size(); }
+
+    /// Try peek num bytes and return the actual peeked size.
+    size_t peek(std::vector<uint8_t>* bytes, size_t num) const {
+        num = std::min(num, payloads_.size());
+        for (size_t i = 0; i < num; ++i) { bytes->push_back(payloads_[i]); }
+        return num;
+    }
+
+    /// Try move num bytes and return the actual moved size.
+    size_t cut_n(std::vector<uint8_t>* bytes, size_t num) {
+        num = std::min(num, payloads_.size());
+        for (size_t i = 0; i < num; ++i) {
+            bytes->push_back(payloads_.front());
+            payloads_.pop_front();
+        }
+        return num;
+    }
+
+    /// Try drains num bytes and return the actual drained size.
+    size_t drains(size_t num) {
+        num = std::min(num, payloads_.size());
+        for (size_t i = 0; i < num; ++i) { payloads_.pop_front(); }
+        return num;
+    }
+
+    IOBuf slice(size_t start, size_t end) const {
+        IOBuf new_buf;
+        for (size_t i = start; i < end; ++i) {
+            new_buf.payloads_.push_back(payloads_[i]);
+        }
+        return new_buf;
+    }
+
+    IOBuf slice(size_t start) const { return slice(start, size()); }
+
+    void append(const uint8_t* data, size_t len) {
+        for (size_t i = 0; i < len; ++i) { payloads_.push_back(data[i]); }
+    }
+
+    void append(const IOBuf& rhs) {
+        for (auto c : rhs.payloads_) { payloads_.push_back(c); }
+    }
 
 private:
     // FIXME(w41ter) more efficient implementation.

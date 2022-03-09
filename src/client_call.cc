@@ -16,8 +16,16 @@
 
 #include <glog/logging.h>
 
+using namespace google::protobuf;
+
 namespace urpc {
 
 void ClientCall::OnComplete() { LOG(FATAL) << "Not implemented"; }
+
+void ClientCall::IssueRPC(const MethodDescriptor* method,
+                          RpcController* controller, const Message* request,
+                          Message* response, Closure* done) {
+    LOG(FATAL) << "Not implemented";
+}
 
 }  // namespace urpc

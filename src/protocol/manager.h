@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#pragma once
+
 #include <string>
 #include <unordered_map>
 
@@ -30,6 +32,10 @@ public:
     /// Find the corresponding protocol by the specified header. `nullptr` is
     /// returned if no such protocol exists.
     BaseProtocol* FindProtocol(const char* header);
+
+    /// Probe the corresponding protocol of the buf, `nullptr` is returned if no
+    /// such protocol exists.
+    BaseProtocol* ProbeProtocol(const IOBuf& buf);
 
 private:
     ProtocolManager();

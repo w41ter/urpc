@@ -16,27 +16,33 @@
 
 #include <assert.h>
 #include <errno.h>
+#include <glog/logging.h>
 
 #include "poller.h"
 
 namespace urpc {
 
-Transport::~Transport() { Reset(); }
+Transport::~Transport() {
+    CHECK(!fd_.valid()) << "Please reset transport before destruction";
+}
 
-void Transport::Reset() {
+void Transport::Reset(int code, std::string reason) {
     write_buf_.reset();
     read_buf_.reset();
 
     if (current_cntl_) {
         // TODO
-        current_cntl_->SetFailed(-1, "reset");
+        current_cntl_->SetFailed(code, reason);
         current_cntl_ = nullptr;
     }
 
     for (auto&& [cntl, buf] : pending_writes_) {
-        cntl->SetFailed(-1, "reset");
+        cntl->SetFailed(code, reason);
     }
     pending_writes_.clear();
+
+    if (poll_in() || poll_out())
+        Poller::singleton()->RemoveConsumer(this);
 
     fd_.reset();
 }
@@ -64,7 +70,8 @@ int Transport::StartWrite(Controller* cntl, IOBuf buf) {
 }
 
 int Transport::DoWrite() {
-    if (current_cntl_) HandleWriteEvent();
+    if (current_cntl_)
+        HandleWriteEvent();
     return 0;
 }
 
@@ -100,7 +107,8 @@ int Transport::HandleWriteEvent() {
             else if (errno != EAGAIN)
                 assert(false && "unknown error");
             else {
-                if (!poll_out()) Poller::singleton()->AddPollOut(this);
+                if (!poll_out())
+                    Poller::singleton()->AddPollOut(this);
                 break;
             }
         }

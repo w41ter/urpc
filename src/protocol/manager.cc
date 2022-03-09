@@ -14,6 +14,8 @@
 
 #include "manager.h"
 
+#include <glog/logging.h>
+
 namespace urpc {
 namespace protocol {
 
@@ -26,6 +28,11 @@ ProtocolManager::ProtocolManager() {}
 
 void ProtocolManager::Register(BaseProtocol* protocol) {
     protocols_.insert_or_assign(protocol->Header(), protocol);
+}
+
+BaseProtocol* ProtocolManager::ProbeProtocol(const IOBuf& buf) {
+    LOG(FATAL) << "Not implemented";
+    return nullptr;
 }
 
 }  // namespace protocol

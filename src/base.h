@@ -14,6 +14,8 @@
 
 #pragma once
 
+#include <string>
+
 namespace urpc {
 
 enum ErrCode : int {
@@ -22,6 +24,8 @@ enum ErrCode : int {
     ERR_TOO_SMALL = 1001,
     /// The header of payloads is different with the protocol header.
     ERR_MISMATCH = 1002,
+    /// This protocol doesn't supported.
+    ERR_NOT_SUPPORTED = 1003,
 };
 
 class IOHandle {
@@ -35,7 +39,7 @@ public:
     virtual int HandleReadEvent() = 0;
     virtual int HandleWriteEvent() = 0;
 
-    virtual void Reset() = 0;
+    virtual void Reset(int code, std::string reason) = 0;
 
     bool poll_in() const noexcept { return flags_ & kPollIn; }
     bool poll_out() const noexcept { return flags_ & kPollOut; }

@@ -17,6 +17,7 @@
 #include "connect_transport.h"
 #include "endpoint.h"
 #include "iobuf.h"
+#include "protocol/base.h"
 
 namespace urpc {
 
@@ -28,6 +29,8 @@ public:
 protected:
     int OnWriteDone(Controller* cntl) override;
     int OnRead(IOBuf* buf) override;
+
+private:
 };
 
 }  // namespace urpc

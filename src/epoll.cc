@@ -61,10 +61,10 @@ int EPoller::PollOnce() {
     for (ssize_t i = 0; i < n; ++i) {
         struct epoll_event* event = &events[i];
         auto handle = reinterpret_cast<IOHandle*>(event->data.ptr);
-        if (event->events & EPOLLIN) {
-            handle->HandleReadEvent();
-        } else if (event->events & EPOLLOUT) {
+        if (event->events & EPOLLOUT) {
             handle->HandleWriteEvent();
+        } else if (event->events & EPOLLIN) {
+            handle->HandleReadEvent();
         } else {
             assert(false && "unknown event");
         }
@@ -74,7 +74,8 @@ int EPoller::PollOnce() {
 }
 
 int EPoller::AddPollIn(IOHandle* handle) {
-    if (handle->poll_in()) return 0;
+    if (handle->poll_in())
+        return 0;
 
     struct epoll_event ev;
     ev.events = EPOLLIN | EPOLLET;
@@ -94,7 +95,8 @@ int EPoller::AddPollIn(IOHandle* handle) {
 }
 
 int EPoller::AddPollOut(IOHandle* handle) {
-    if (handle->poll_out()) return 0;
+    if (handle->poll_out())
+        return 0;
 
     struct epoll_event ev;
     ev.events = EPOLLOUT | EPOLLET;

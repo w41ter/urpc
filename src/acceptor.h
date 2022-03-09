@@ -27,7 +27,7 @@ public:
     int HandleReadEvent() override;
     int HandleWriteEvent() override;
 
-    void Reset() override;
+    void Reset(int code, std::string reason) override;
 
 private:
     OwnedFD listen_fd_;

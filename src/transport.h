@@ -36,7 +36,7 @@ public:
     int StartWrite(Controller* cntl, IOBuf buf);
 
     int fd() const override { return fd_; }
-    void Reset() override;
+    void Reset(int code, std::string reason) override;
 
 protected:
     virtual int DoWrite();

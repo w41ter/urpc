@@ -15,16 +15,17 @@
 #pragma once
 
 #include "controller.h"
+#include "transport.h"
 
 namespace urpc {
 
 class ServerCall : public Controller {
 public:
-    ~ServerCall() override;
+    ~ServerCall() override = default;
 
     void OnComplete() override;
 
-    // TODO
+    virtual void Run(Transport* trans) = 0;
 };
 
 }  // namespace urpc
