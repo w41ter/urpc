@@ -12,30 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#pragma once
-
-#include "endpoint.h"
-#include "transport.h"
+#include <google/protobuf/service.h>
 
 namespace urpc {
 
-class ConnectTransport : public Transport {
+class Controller : public google::protobuf::RpcController {
 public:
-    ConnectTransport(butil::EndPoint endpoint) : endpoint_(endpoint){};
-    ~ConnectTransport() override;
-
-protected:
-    void Reset(int code, std::string reason) override;
-    int DoWrite() override;
-    int HandleWriteEvent() override;
-
-private:
-    int ConnectIfNot();
-    int OnConnect();
-
-    bool connected_;
-    bool connecting_;
-    butil::EndPoint endpoint_;
+    ~Controller() override = default;
 };
 
 }  // namespace urpc

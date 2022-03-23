@@ -16,6 +16,13 @@
 
 #include <glog/logging.h>
 
+#include <memory>
+
+#include "base.h"
+#include "protocol/manager.h"
+
+using urpc::protocol::ProtocolManager;
+
 namespace urpc {
 
 ServerTransport::~ServerTransport() {}
@@ -26,7 +33,29 @@ int ServerTransport::OnWriteDone(Controller* cntl) {
 }
 
 int ServerTransport::OnRead(IOBuf* buf) {
-    LOG(FATAL) << "TODO";
+    ServerCall* raw_call = nullptr;
+
+    int code = ERR_MISMATCH;
+    if (protocol_)
+        code = protocol_->ParseRequest(*buf, &raw_call);
+    if (code == ERR_MISMATCH) {
+        protocol_ = ProtocolManager::singleton()->ProbeProtocol(*buf);
+        if (!protocol_) {
+            Reset(ERR_NOT_SUPPORTED, "unknown protocol");
+            return -1;
+        }
+    }
+
+    code = protocol_->ParseRequest(*buf, &raw_call);
+    if (code != ERR_OK) {
+        if (code == ERR_TOO_SMALL)
+            return 0;
+        Reset(code, "parse request");
+        return -1;
+    }
+
+    raw_call->Run(this);
+
     return 0;
 }
 

@@ -12,15 +12,23 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <google/protobuf/service.h>
+
 #include "controller.h"
 
 namespace urpc {
 
 class ClientCall : public Controller {
 public:
-    ~ClientCall() override;
+    ~ClientCall() override = default;
 
     void OnComplete() override;
+
+    virtual void IssueRPC(const google::protobuf::MethodDescriptor* method,
+                          google::protobuf::RpcController* controller,
+                          const google::protobuf::Message* request,
+                          google::protobuf::Message* response,
+                          google::protobuf::Closure* done);
 };
 
 }  // namespace urpc

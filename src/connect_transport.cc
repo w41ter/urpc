@@ -19,6 +19,8 @@
 #include <sys/socket.h>
 #include <sys/types.h>
 
+#include <utility>
+
 #include "endpoint.h"
 #include "owned_fd.h"
 #include "poller.h"
@@ -86,11 +88,11 @@ int ConnectTransport::OnConnect() {
     return 0;
 }
 
-void ConnectTransport::Reset() {
+void ConnectTransport::Reset(int code, std::string reason) {
     connecting_ = false;
     connected_ = false;
 
-    Transport::Reset();
+    Transport::Reset(code, std::move(reason));
 }
 
 }  // namespace urpc

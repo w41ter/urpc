@@ -12,30 +12,28 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#pragma once
+#include "call.h"
 
-#include "endpoint.h"
-#include "transport.h"
+#include <glog/logging.h>
+
+#include "../../coding.h"
 
 namespace urpc {
+namespace protocol {
 
-class ConnectTransport : public Transport {
-public:
-    ConnectTransport(butil::EndPoint endpoint) : endpoint_(endpoint){};
-    ~ConnectTransport() override;
+void EchoClientCall::OnComplete() { LOG(FATAL) << "Not implemented"; }
 
-protected:
-    void Reset(int code, std::string reason) override;
-    int DoWrite() override;
-    int HandleWriteEvent() override;
+void EchoServerCall::Run(Transport *trans) {
+    IOBuf buf;
+    buf.append(reinterpret_cast<const uint8_t *>("ECHO"), 4);
 
-private:
-    int ConnectIfNot();
-    int OnConnect();
+    uint8_t buf_32[4];
+    EncodeFixed32(buf_32, buf_.size());
+    buf.append(buf_32, 4);
+    buf.append(buf_);
 
-    bool connected_;
-    bool connecting_;
-    butil::EndPoint endpoint_;
-};
+    trans->StartWrite(this, std::move(buf));
+}
 
+}  // namespace protocol
 }  // namespace urpc

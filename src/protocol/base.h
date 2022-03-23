@@ -12,7 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#pragma once
+
 #include "../iobuf.h"
+#include "../server_call.h"
 
 namespace urpc {
 namespace protocol {
@@ -27,7 +30,7 @@ public:
 
     /// Parse the protocol request. If the payload isn't enough, ERR_TOO_SMALL
     /// is returned. If the header is mismatched, ERR_MISMATCH is returned.
-    virtual int ParseRequst(const IOBuf& buf) = 0;
+    virtual int ParseRequest(const IOBuf& buf, ServerCall** server_call) = 0;
 
     /// Parse the protocol response. If the payload isn't enough, ERR_TOO_SMALL
     /// is returned. If the header is mismatched, ERR_MISMATCH is returned.

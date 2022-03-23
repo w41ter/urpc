@@ -12,8 +12,11 @@ set(FILES
     acceptor.cc
     poller.cc
     epoll.cc
+    channel.cc
 
     protocol/manager.cc
+    protocol/echo/call.cc
+    protocol/echo/protocol.cc
     )
 
 add_library(urpc ${FILES})

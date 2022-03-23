@@ -39,6 +39,8 @@ public:
         return *this;
     }
 
+    bool valid() const noexcept { return fd_ >= 0; }
+
     void reset() {
         if (fd_ >= 0) {
             close(fd_);

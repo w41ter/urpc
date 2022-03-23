@@ -8,3 +8,4 @@ FetchContent_Declare(
     SOURCE_SUBDIR  cmake
 )
 FetchContent_MakeAvailable(protobuf)
+set(PROTOBUF_PROTOC_EXECUTABLE ${protobuf_BINARY_DIR}/protoc)

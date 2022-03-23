@@ -12,30 +12,20 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#pragma once
+syntax = "proto3";
+package test;
 
-#include "endpoint.h"
-#include "transport.h"
+option cc_generic_services = true;
 
-namespace urpc {
+message EchoRequest {
+  string message = 1;
+}
 
-class ConnectTransport : public Transport {
-public:
-    ConnectTransport(butil::EndPoint endpoint) : endpoint_(endpoint){};
-    ~ConnectTransport() override;
+message EchoResponse {
+  string message = 1;
+  int32 message_count = 2;
+}
 
-protected:
-    void Reset(int code, std::string reason) override;
-    int DoWrite() override;
-    int HandleWriteEvent() override;
-
-private:
-    int ConnectIfNot();
-    int OnConnect();
-
-    bool connected_;
-    bool connecting_;
-    butil::EndPoint endpoint_;
-};
-
-}  // namespace urpc
+service EchoService {
+    rpc Echo(EchoRequest) returns (EchoResponse);
+}

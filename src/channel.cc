@@ -12,30 +12,25 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#pragma once
+#include <glog/logging.h>
+#include <urpc/channel.h>
 
-#include "endpoint.h"
-#include "transport.h"
+#include "client_call.h"
+
+using namespace google::protobuf;
 
 namespace urpc {
 
-class ConnectTransport : public Transport {
-public:
-    ConnectTransport(butil::EndPoint endpoint) : endpoint_(endpoint){};
-    ~ConnectTransport() override;
+int Channel::Init(const char* url, const ChannelOptions& options) {
+    LOG(FATAL) << "Not implemented";
+    return 0;
+}
 
-protected:
-    void Reset(int code, std::string reason) override;
-    int DoWrite() override;
-    int HandleWriteEvent() override;
-
-private:
-    int ConnectIfNot();
-    int OnConnect();
-
-    bool connected_;
-    bool connecting_;
-    butil::EndPoint endpoint_;
-};
+void Channel::CallMethod(const MethodDescriptor* method, RpcController* cntl,
+                         const Message* request, Message* response,
+                         Closure* done) {
+    reinterpret_cast<ClientCall*>(cntl)->IssueRPC(method, cntl, request,
+                                                  response, done);
+}
 
 }  // namespace urpc
