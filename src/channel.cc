@@ -12,23 +12,25 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <google/protobuf/service.h>
+#include <glog/logging.h>
+#include <urpc/channel.h>
+
+#include "client_call.h"
+
+using namespace google::protobuf;
 
 namespace urpc {
 
-struct ChannelOption {};
+int Channel::Init(const char* url, const ChannelOptions& options) {
+    LOG(FATAL) << "Not implemented";
+    return 0;
+}
 
-class Channel : google::protobuf::RpcChannel {
-public:
-    Channel();
-    ~Channel() override = default;
-
-    void CallMethod(
-        const google::protobuf::MethodDescriptor* method,
-                    google::protobuf::RpcController* controller,
-                    const google::protobuf::Message* request,
-                    google::protobuf::Message* response,
-                    google::protobuf::Closure* done) override;
-};
+void Channel::CallMethod(const MethodDescriptor* method, RpcController* cntl,
+                         const Message* request, Message* response,
+                         Closure* done) {
+    reinterpret_cast<ClientCall*>(cntl)->IssueRPC(method, cntl, request,
+                                                  response, done);
+}
 
 }  // namespace urpc

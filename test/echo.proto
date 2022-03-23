@@ -12,19 +12,20 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "channel.h"
+syntax = "proto3";
+package test;
 
-#include "client_call.h"
+option cc_generic_services = true;
 
-using namespace google::protobuf;
-
-namespace urpc {
-
-void Channel::CallMethod(const MethodDescriptor* method, RpcController* cntl,
-                         const Message* request, Message* response,
-                         Closure* done) {
-    reinterpret_cast<ClientCall*>(cntl)->IssueRPC(method, cntl, request,
-                                                  response, done);
+message EchoRequest {
+  string message = 1;
 }
 
-}  // namespace urpc
+message EchoResponse {
+  string message = 1;
+  int32 message_count = 2;
+}
+
+service EchoService {
+    rpc Echo(EchoRequest) returns (EchoResponse);
+}

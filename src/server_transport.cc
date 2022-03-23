@@ -54,7 +54,7 @@ int ServerTransport::OnRead(IOBuf* buf) {
         return -1;
     }
 
-    raw_call->Run();
+    raw_call->Run(this);
 
     return 0;
 }

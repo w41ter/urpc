@@ -12,7 +12,7 @@ set(FILES
     acceptor.cc
     poller.cc
     epoll.cc
-    channel.cpp
+    channel.cc
 
     protocol/manager.cc
     protocol/echo/call.cc
