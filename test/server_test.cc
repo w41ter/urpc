@@ -17,9 +17,17 @@
 #include <gtest/gtest.h>
 #include <urpc/channel.h>
 #include <urpc/controller.h>
+#include <urpc/endpoint.h>
 #include <urpc/server.h>
 
+#include <atomic>
+#include <chrono>
 #include <memory>
+#include <ratio>
+#include <thread>
+
+#include "urpc/endpoint.h"
+#include "urpc/io_context.h"
 
 using namespace google::protobuf;
 
@@ -40,10 +48,10 @@ void EchoServiceImpl::Echo(RpcController* controller,
     LOG(FATAL) << "Not implemented";
 }
 
-void RunEchoService() {
+void RunEchoService(Server* server) {
     auto service = std::make_unique<EchoServiceImpl>();
-    Server server;
-    server.AddService(service.release(), ServiceOwnership::SERVER_OWNS_SERVICE);
+    server->AddService(service.release(),
+                       ServiceOwnership::SERVER_OWNS_SERVICE);
 }
 
 void HandleEchoResponse(Controller* cntl, EchoResponse* response) {
@@ -54,27 +62,41 @@ void HandleEchoResponse(Controller* cntl, EchoResponse* response) {
         LOG(WARNING) << "Fail to send EchoRequest, " << cntl->ErrorText();
         return;
     }
-    // LOG(INFO) << "Received response from " << cntl->remote_side() << ": "
-    //           << response->message()
-    //           << " (attached=" << cntl->response_attachment() << ")"
-    //           << " latency=" << cntl->latency_us() << "us";
+    LOG(INFO) << "Received response success";
 }
 
 TEST(EchoTest, Basic) {
     google::InstallFailureSignalHandler();
-    RunEchoService();
+
+    std::atomic<bool> ready = false;
+    std::thread server_handle([&]() {
+        Server server;
+        RunEchoService(&server);
+        if (server.Start(EndPoint(IP_ANY, 8086)) != 0) {
+            LOG(FATAL) << "Start server failed";
+            return;
+        }
+
+        ready.store(true, std::memory_order_release);
+        IOContext context;
+    });
+
+    while (!ready.load(std::memory_order_acquire))
+        std::this_thread::sleep_for(std::chrono::milliseconds(1));
+    LOG(INFO) << "Service is bootstrapted";
 
     ChannelOptions options;
     Channel channel;
-    if (channel.Init("", options) != 0) {
+    if (channel.Init("0.0.0.0:8086", options) != 0) {
         LOG(FATAL) << "Fail to initialize channel";
     }
 
     EchoService_Stub stub(&channel);
-    auto cntl = new Controller();
+    auto cntl = NewURPCController();
     auto resp = new EchoResponse();
     EchoRequest req;
     google::protobuf::Closure* done =
         NewCallback(&HandleEchoResponse, cntl, resp);
     stub.Echo(cntl, &req, resp, done);
+    server_handle.join();
 }

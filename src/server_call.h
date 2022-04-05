@@ -14,7 +14,7 @@
 
 #pragma once
 
-#include "controller.h"
+#include <urpc/controller.h>
 #include "transport.h"
 
 namespace urpc {

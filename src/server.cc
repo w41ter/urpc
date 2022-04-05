@@ -15,7 +15,12 @@
 #include <glog/logging.h>
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/service.h>
+#include <urpc/endpoint.h>
 #include <urpc/server.h>
+
+#include <memory>
+
+#include "acceptor.h"
 
 using namespace google::protobuf;
 
@@ -26,7 +31,7 @@ public:
     ~ServerImpl();
 
     int AddService(Service* service, ServiceOwnership ownership);
-    int Run();
+    int Start(EndPoint endpoint);
 
 private:
     struct ServiceHolder {
@@ -34,6 +39,7 @@ private:
         ServiceOwnership ownership;
     };
 
+    std::unique_ptr<Acceptor> acceptor_;
     std::unordered_map<std::string, ServiceHolder> services_;
     std::unordered_map<std::string, const MethodDescriptor*> descriptor_;
 };
@@ -55,6 +61,15 @@ int ServerImpl::AddService(Service* service, ServiceOwnership ownership) {
     return 0;
 }
 
+int ServerImpl::Start(EndPoint endpoint) {
+    int fd = tcp_listen(endpoint);
+    if (fd < 0)
+        return fd;
+
+    acceptor_ = std::make_unique<Acceptor>(fd);
+    return 0;
+}
+
 ServerImpl::~ServerImpl() {
     descriptor_.clear();
     for (auto&& [_, holder] : services_) {
@@ -70,5 +85,7 @@ Server::~Server() {}
 int Server::AddService(Service* service, ServiceOwnership ownership) {
     return impl_->AddService(service, ownership);
 }
+
+int Server::Start(EndPoint endpoint) { return impl_->Start(endpoint); }
 
 }  // namespace urpc

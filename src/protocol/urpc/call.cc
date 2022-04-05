@@ -74,4 +74,7 @@ void URPCServerCall::Run(Transport* trans) { LOG(FATAL) << "Not supported"; }
 
 }  // namespace urpc
 }  // namespace protocol
+
+Controller* NewURPCController() { return new protocol::urpc::URPCClientCall(); }
+
 }  // namespace urpc

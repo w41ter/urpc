@@ -12,7 +12,7 @@ foreach(P ${PROTO_FILES})
     )
 endforeach()
 
-add_library(urpc_proto ${PROTO_OUTDIR}/protocol/urpc/urpc_meta.pb.cc)
+add_library(urpc_proto STATIC ${PROTO_OUTDIR}/protocol/urpc/urpc_meta.pb.cc)
 target_include_directories(urpc_proto PUBLIC
     ${PROTO_OUTDIR}
     ${PROTO_OUTDIR}/protocol/urpc)
@@ -33,6 +33,7 @@ set(FILES
     epoll.cc
     channel.cc
     iobuf.cc
+    io_context.cc
     server.cc
 
     protocol/manager.cc
@@ -40,6 +41,7 @@ set(FILES
     protocol/urpc/protocol.cc
     )
 
-add_library(urpc ${FILES})
+add_library(urpc STATIC ${FILES})
 target_include_directories(urpc PUBLIC "${PROJECT_SOURCE_DIR}/include")
 target_link_libraries(urpc pthread glog protobuf::libprotobuf gflags urpc_proto)
+target_compile_options(urpc PRIVATE -g)
