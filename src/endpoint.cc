@@ -17,7 +17,7 @@
 
 // Date: Mon. Nov 7 14:47:36 CST 2011
 
-#include "endpoint.h"  // ip_t
+#include <urpc/endpoint.h>  // ip_t
 
 #include <arpa/inet.h>  // inet_pton, inet_ntop
 #include <errno.h>      // errno
@@ -39,7 +39,7 @@ DEFINE_bool(reuse_port, false, "Enable SO_REUSEPORT for all listened sockets");
 
 DEFINE_bool(reuse_addr, true, "Enable SO_REUSEADDR for all listened sockets");
 
-namespace butil {
+namespace urpc {
 
 int str2ip(const char* ip_str, ip_t* ip) {
     // ip_str can be NULL when called by EndPoint(0, ...)
@@ -328,7 +328,7 @@ int get_local_side(int fd, EndPoint* out) {
         return rc;
     }
     if (out) {
-        *out = butil::EndPoint(*(sockaddr_in*)&addr);
+        *out = urpc::EndPoint(*(sockaddr_in*)&addr);
     }
     return 0;
 }
@@ -341,9 +341,9 @@ int get_remote_side(int fd, EndPoint* out) {
         return rc;
     }
     if (out) {
-        *out = butil::EndPoint(*(sockaddr_in*)&addr);
+        *out = urpc::EndPoint(*(sockaddr_in*)&addr);
     }
     return 0;
 }
 
-}  // namespace butil
+}  // namespace urpc

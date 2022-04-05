@@ -13,23 +13,67 @@
 // limitations under the License.
 
 #include <glog/logging.h>
+#include <google/protobuf/descriptor.h>
+#include <google/protobuf/message.h>
 #include <urpc/channel.h>
+#include <urpc/endpoint.h>
+
+#include <string>
+#include <unordered_map>
 
 #include "client_call.h"
+#include "client_transport.h"
 
 using namespace google::protobuf;
 
 namespace urpc {
 
+class SocketMap {
+public:
+    ~SocketMap() {}
+
+    static SocketMap* singleton() {
+        thread_local SocketMap socket_map;
+        return &socket_map;
+    }
+
+    ClientTransport* GetOrCreateTransport(const char* url,
+                                          const ChannelOptions& options) {
+        auto it = connection_map_.find(std::string(url));
+        if (it == connection_map_.end()) {
+            EndPoint endpoint;
+            if (str2endpoint(url, &endpoint) == -1) {
+                LOG(WARNING) << "Invalid endpoint " << url;
+                return nullptr;
+            }
+            auto client_transport = new ClientTransport(endpoint);
+            it = connection_map_.insert({std::string(url), client_transport})
+                     .first;
+        }
+        return it->second;
+    }
+
+private:
+    SocketMap() {}
+
+    std::unordered_map<std::string, ClientTransport*> connection_map_;
+};
+
+ChannelOptions::ChannelOptions()
+    : connect_timeout_ms(200), timeout_ms(500), protocol(PROTOCOL_UNKNOWN) {}
+
 int Channel::Init(const char* url, const ChannelOptions& options) {
-    LOG(FATAL) << "Not implemented";
+    transport_ = SocketMap::singleton()->GetOrCreateTransport(url, options);
     return 0;
 }
 
 void Channel::CallMethod(const MethodDescriptor* method, RpcController* cntl,
                          const Message* request, Message* response,
                          Closure* done) {
-    reinterpret_cast<ClientCall*>(cntl)->IssueRPC(method, cntl, request,
+    LOG_IF(FATAL, transport_ == nullptr)
+        << "Please invoke Channel::Init() first";
+    LOG(INFO) << method->full_name() << request->SerializeAsString();
+    reinterpret_cast<ClientCall*>(cntl)->IssueRPC(transport_, method, request,
                                                   response, done);
 }
 

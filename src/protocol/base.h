@@ -18,6 +18,9 @@
 #include "../server_call.h"
 
 namespace urpc {
+
+class ClientTransport;
+
 namespace protocol {
 
 class BaseProtocol {
@@ -30,11 +33,11 @@ public:
 
     /// Parse the protocol request. If the payload isn't enough, ERR_TOO_SMALL
     /// is returned. If the header is mismatched, ERR_MISMATCH is returned.
-    virtual int ParseRequest(const IOBuf& buf, ServerCall** server_call) = 0;
+    virtual int ParseRequest(IOBuf* buf, ServerCall** server_call) = 0;
 
     /// Parse the protocol response. If the payload isn't enough, ERR_TOO_SMALL
     /// is returned. If the header is mismatched, ERR_MISMATCH is returned.
-    virtual int ParseResponse(const IOBuf& buf) = 0;
+    virtual int ParseResponse(IOBuf* buf, ClientTransport* transport) = 0;
 };
 
 }  // namespace protocol

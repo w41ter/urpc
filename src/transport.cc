@@ -27,8 +27,8 @@ Transport::~Transport() {
 }
 
 void Transport::Reset(int code, std::string reason) {
-    write_buf_.reset();
-    read_buf_.reset();
+    write_buf_.clear();
+    read_buf_.clear();
 
     if (current_cntl_) {
         // TODO
@@ -77,7 +77,7 @@ int Transport::DoWrite() {
 
 int Transport::HandleReadEvent() {
     while (true) {
-        int n = read_buf_.read(fd_);
+        int n = read_buf_.append_from_file_descriptor(fd_, 1024 * 1024);
         if (n < 0) {
             if (errno == EINTR)
                 continue;
@@ -100,7 +100,7 @@ int Transport::HandleReadEvent() {
 
 int Transport::HandleWriteEvent() {
     while (!write_buf_.empty()) {
-        int n = write_buf_.write(fd_);
+        int n = write_buf_.cut_into_file_descriptor(fd_);
         if (n < 0) {
             if (errno == EINTR)
                 continue;
@@ -114,7 +114,7 @@ int Transport::HandleWriteEvent() {
         }
 
         if (write_buf_.empty()) {
-            write_buf_.reset();
+            write_buf_.clear();
             OnWriteDone(current_cntl_);
             current_cntl_ = nullptr;
 

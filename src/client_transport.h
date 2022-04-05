@@ -14,8 +14,10 @@
 
 #pragma once
 
+#include <urpc/endpoint.h>
+
+#include "client_call.h"
 #include "connect_transport.h"
-#include "endpoint.h"
 #include "iobuf.h"
 #include "protocol/base.h"
 
@@ -23,14 +25,21 @@ namespace urpc {
 
 class ClientTransport : public ConnectTransport {
 public:
-    ClientTransport(butil::EndPoint endpoint) : ConnectTransport(endpoint) {}
+    ClientTransport(EndPoint endpoint) : ConnectTransport(endpoint) {}
     ~ClientTransport() override;
+
+    ClientCall* TakeClientCall(uint64_t request_id);
 
 protected:
     int OnWriteDone(Controller* cntl) override;
     int OnRead(IOBuf* buf) override;
 
 private:
+    /// The last successfully parsed protocol, used to optimize protocol
+    /// lookuping.
+    protocol::BaseProtocol* protocol_{nullptr};
+
+    std::unordered_map<uint64_t, ClientCall*> pending_calls_;
 };
 
 }  // namespace urpc

@@ -19,6 +19,21 @@ namespace urpc {
 class Controller : public google::protobuf::RpcController {
 public:
     ~Controller() override = default;
+
+    void Reset() override {}
+
+    bool Failed() const override { return false; }
+
+    std::string ErrorText() const override { return ""; }
+
+private:
+    void StartCancel() override {}
+
+    void SetFailed(const std::string& reason) override {}
+
+    bool IsCanceled() const override { return false; }
+
+    void NotifyOnCancel(google::protobuf::Closure* callback) override {}
 };
 
 }  // namespace urpc

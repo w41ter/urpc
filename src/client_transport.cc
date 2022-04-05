@@ -16,6 +16,10 @@
 
 #include <glog/logging.h>
 
+#include "protocol/manager.h"
+
+using urpc::protocol::ProtocolManager;
+
 namespace urpc {
 
 ClientTransport::~ClientTransport() {}
@@ -23,8 +27,37 @@ ClientTransport::~ClientTransport() {}
 int ClientTransport::OnWriteDone(Controller* cntl) { return 0; }
 
 int ClientTransport::OnRead(IOBuf* buf) {
-    LOG(FATAL) << "TODO";
+    int code = ERR_MISMATCH;
+    if (protocol_)
+        code = protocol_->ParseResponse(buf, this);
+    if (code == ERR_MISMATCH) {
+        protocol_ = ProtocolManager::singleton()->ProbeProtocol(*buf);
+        if (!protocol_) {
+            Reset(ERR_NOT_SUPPORTED, "unknown protocol");
+            return -1;
+        }
+    }
+
+    code = protocol_->ParseResponse(buf, this);
+    if (code != ERR_OK) {
+        if (code == ERR_TOO_SMALL)
+            return 0;
+        Reset(code, "parse request");
+        return -1;
+    }
+
     return 0;
+}
+
+ClientCall* ClientTransport::TakeClientCall(uint64_t request_id) {
+    auto it = pending_calls_.find(request_id);
+    if (it == pending_calls_.end()) {
+        return nullptr;
+    }
+
+    ClientCall* client_call = it->second;
+    pending_calls_.erase(it);
+    return client_call;
 }
 
 }  // namespace urpc
