@@ -12,7 +12,7 @@ foreach(P ${PROTO_FILES})
     )
 endforeach()
 
-add_library(test_proto ${PROTO_OUTDIR}/echo.pb.cc)
+add_library(test_proto STATIC ${PROTO_OUTDIR}/echo.pb.cc)
 target_include_directories(test_proto PUBLIC ${PROTO_OUTDIR}/)
 target_link_libraries(test_proto protobuf::libprotobuf)
 

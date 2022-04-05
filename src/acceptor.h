@@ -19,7 +19,7 @@ namespace urpc {
 
 class Acceptor : public IOHandle {
 public:
-    Acceptor(int listen_fd) : listen_fd_(listen_fd) {}
+    Acceptor(int listen_fd);
     ~Acceptor() override;
 
     int fd() const override { return listen_fd_; }

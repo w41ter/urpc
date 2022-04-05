@@ -14,31 +14,11 @@
 
 #pragma once
 
-#include <google/protobuf/service.h>
-
-#include <memory>
-
-#include "endpoint.h"
-
 namespace urpc {
 
-// Represent server's ownership of services.
-enum ServiceOwnership { SERVER_OWNS_SERVICE, SERVER_DOESNT_OWN_SERVICE };
-
-class ServerImpl;
-
-class Server {
+class IOContext final {
 public:
-    Server();
-    ~Server();
-
-    int Start(EndPoint ip_port);
-
-    int AddService(google::protobuf::Service* service,
-                   ServiceOwnership ownership);
-
-private:
-    std::unique_ptr<ServerImpl> impl_;
+    ~IOContext();
 };
 
 }  // namespace urpc

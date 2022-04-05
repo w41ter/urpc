@@ -14,10 +14,11 @@
 
 #pragma once
 
+#include <urpc/controller.h>
+
 #include <deque>
 
 #include "base.h"
-#include "controller.h"
 #include "iobuf.h"
 #include "owned_fd.h"
 

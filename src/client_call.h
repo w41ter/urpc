@@ -15,7 +15,7 @@
 
 #include <google/protobuf/service.h>
 
-#include "controller.h"
+#include <urpc/controller.h>
 #include "iobuf.h"
 
 namespace urpc {

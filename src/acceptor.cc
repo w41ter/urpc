@@ -19,9 +19,16 @@
 #include <sys/socket.h>
 #include <sys/types.h>
 
+#include "poller.h"
 #include "server_transport.h"
 
 namespace urpc {
+
+Acceptor::Acceptor(int listen_fd) : listen_fd_(listen_fd) {
+    Poller::singleton()->AddPollIn(this);
+}
+
+Acceptor::~Acceptor() {}
 
 int Acceptor::HandleReadEvent() {
     while (true) {

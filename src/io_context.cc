@@ -12,33 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#pragma once
+#include <urpc/io_context.h>
 
-#include <google/protobuf/service.h>
-
-#include <memory>
-
-#include "endpoint.h"
+#include "poller.h"
 
 namespace urpc {
 
-// Represent server's ownership of services.
-enum ServiceOwnership { SERVER_OWNS_SERVICE, SERVER_DOESNT_OWN_SERVICE };
-
-class ServerImpl;
-
-class Server {
-public:
-    Server();
-    ~Server();
-
-    int Start(EndPoint ip_port);
-
-    int AddService(google::protobuf::Service* service,
-                   ServiceOwnership ownership);
-
-private:
-    std::unique_ptr<ServerImpl> impl_;
-};
+IOContext::~IOContext() {
+    for (;;) { Poller::singleton()->PollOnce(); }
+}
 
 }  // namespace urpc
