@@ -15,11 +15,18 @@
 #include "call.h"
 
 #include <glog/logging.h>
+#include <google/protobuf/descriptor.h>
+#include <google/protobuf/message.h>
+#include <google/protobuf/service.h>
 
 #include "../../client_transport.h"
 #include "../../coding.h"
 #include "../../iobuf.h"
+#include "../../service_holder.h"
+#include "google/protobuf/descriptor.h"
 #include "urpc_meta.pb.h"
+
+using namespace google::protobuf;
 
 namespace urpc {
 namespace protocol {
@@ -51,10 +58,12 @@ void URPCClientCall::IssueRPC(ClientTransport* transport,
 
     uint8_t dst[4];
     EncodeFixed32(dst, payload_size);
-    buf.append((const char*)dst);
+    buf.append(dst, 4);
     IOBufAsZeroCopyOutputStream out(&buf);
     rpc_meta.SerializeToZeroCopyStream(&out);
     request->SerializeToZeroCopyStream(&out);
+
+    LOG(INFO) << "URPCClientCall::IssueRPC buf len is " << buf.size();
 
     transport->StartWrite(this, std::move(buf));
 }
@@ -70,7 +79,21 @@ int URPCClientCall::ProcessResponse(const IOBuf& response) {
     return 0;
 }
 
-void URPCServerCall::Run(Transport* trans) { LOG(FATAL) << "Not supported"; }
+int URPCServerCall::Serve(Transport* trans) {
+    Service* service = ServiceHolder::singleton()->FindService(service_name_);
+    const MethodDescriptor* method =
+        service->GetDescriptor()->FindMethodByName(method_name_);
+    Message* request = service->GetRequestPrototype(method).New();
+    Message* response = service->GetResponsePrototype(method).New();
+    IOBufAsZeroCopyInputStream in(buf_);
+    request->ParseFromZeroCopyStream(&in);
+    service->CallMethod(method, this, request, response, this);
+    return 0;
+}
+
+void URPCServerCall::Run() {
+    LOG(FATAL) << "Not implemented";
+}
 
 }  // namespace urpc
 }  // namespace protocol

@@ -17,18 +17,17 @@
 
 // Date: Mon. Nov 7 14:47:36 CST 2011
 
-#include <urpc/endpoint.h>  // ip_t
-
 #include <arpa/inet.h>  // inet_pton, inet_ntop
 #include <errno.h>      // errno
 #include <gflags/gflags.h>
 #include <glog/logging.h>
-#include <netdb.h>       // gethostbyname_r
-#include <stdio.h>       // snprintf
-#include <stdlib.h>      // strtol
-#include <string.h>      // strcpy
-#include <sys/socket.h>  // SO_REUSEADDR SO_REUSEPORT
-#include <unistd.h>      // gethostname
+#include <netdb.h>          // gethostbyname_r
+#include <stdio.h>          // snprintf
+#include <stdlib.h>         // strtol
+#include <string.h>         // strcpy
+#include <sys/socket.h>     // SO_REUSEADDR SO_REUSEPORT
+#include <unistd.h>         // gethostname
+#include <urpc/endpoint.h>  // ip_t
 
 #include <string_view>
 
@@ -271,7 +270,8 @@ int tcp_connect(EndPoint point, int* self_port) {
 }
 
 int tcp_listen(EndPoint point) {
-    urpc::OwnedFD sockfd(socket(AF_INET, SOCK_STREAM, 0));
+    urpc::OwnedFD sockfd(
+        socket(AF_INET, SOCK_STREAM | SOCK_NONBLOCK | SOCK_CLOEXEC, 0));
     if (sockfd < 0) {
         return -1;
     }

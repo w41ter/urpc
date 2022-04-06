@@ -15,6 +15,7 @@
 #pragma once
 
 #include <urpc/controller.h>
+
 #include "transport.h"
 
 namespace urpc {
@@ -25,7 +26,7 @@ public:
 
     void OnComplete() override;
 
-    virtual void Run(Transport* trans) = 0;
+    virtual int Serve(Transport* trans) = 0;
 };
 
 }  // namespace urpc

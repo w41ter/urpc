@@ -54,6 +54,8 @@ int EPoller::PollOnce() {
     constexpr int MAX_EVENTS = 32;
     struct epoll_event events[MAX_EVENTS];
     ssize_t n = epoll_wait(pollfd_, events, MAX_EVENTS, 0);
+    LOG(INFO) << "epoll_wait fd " << static_cast<int>(pollfd_) << " found " << n
+              << " active events";
     if (n < 0) {
         return n;
     }
@@ -88,6 +90,7 @@ int EPoller::AddPollIn(IOHandle* handle) {
     if (epoll_ctl(pollfd_, op, handle->fd(), &ev) < 0) {
         PLOG(FATAL) << "epoll_ctl";
     }
+    LOG(INFO) << "AddPollIn fd is " << handle->fd();
 
     IOHandleAccessor(handle).SetPollIn();
 
@@ -109,6 +112,7 @@ int EPoller::AddPollOut(IOHandle* handle) {
     if (epoll_ctl(pollfd_, op, handle->fd(), &ev) < 0) {
         PLOG(FATAL) << "epoll_ctl";
     }
+    LOG(INFO) << "AddPollOut fd is " << handle->fd();
 
     IOHandleAccessor(handle).SetPollOut();
 
@@ -130,7 +134,7 @@ int EPoller::RemoveConsumer(IOHandle* handle) {
 }
 
 Poller* poller() {
-    static EPoller epoller;
+    static thread_local EPoller epoller;
     return &epoller;
 }
 

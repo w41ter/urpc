@@ -72,9 +72,9 @@ void Channel::CallMethod(const MethodDescriptor* method, RpcController* cntl,
                          Closure* done) {
     LOG_IF(FATAL, transport_ == nullptr)
         << "Please invoke Channel::Init() first";
-    LOG(INFO) << method->full_name() << request->SerializeAsString();
-    reinterpret_cast<ClientCall*>(cntl)->IssueRPC(transport_, method, request,
-                                                  response, done);
+    LOG(INFO) << "Channel::CallMethod" << method->full_name();
+    auto call = reinterpret_cast<ClientCall*>(cntl);
+    call->IssueRPC(transport_, method, request, response, done);
 }
 
 }  // namespace urpc

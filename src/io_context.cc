@@ -14,12 +14,18 @@
 
 #include <urpc/io_context.h>
 
+#include <chrono>
+#include <thread>
+
 #include "poller.h"
 
 namespace urpc {
 
 IOContext::~IOContext() {
-    for (;;) { Poller::singleton()->PollOnce(); }
+    for (;;) {
+        Poller::singleton()->PollOnce();
+        std::this_thread::sleep_for(std::chrono::seconds(1));
+    }
 }
 
 }  // namespace urpc

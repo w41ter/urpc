@@ -41,6 +41,7 @@ int ServerTransport::OnRead(IOBuf* buf) {
     if (code == ERR_MISMATCH) {
         protocol_ = ProtocolManager::singleton()->ProbeProtocol(*buf);
         if (!protocol_) {
+            LOG(INFO) << "NOT supported protocol";
             Reset(ERR_NOT_SUPPORTED, "unknown protocol");
             return -1;
         }
@@ -50,13 +51,12 @@ int ServerTransport::OnRead(IOBuf* buf) {
     if (code != ERR_OK) {
         if (code == ERR_TOO_SMALL)
             return 0;
+        LOG(INFO) << "parse request code " << code;
         Reset(code, "parse request");
         return -1;
     }
 
-    raw_call->Run(this);
-
-    return 0;
+    return raw_call->Serve(this);
 }
 
 }  // namespace urpc

@@ -44,6 +44,8 @@ int Acceptor::HandleReadEvent() {
             }
         }
 
+        LOG(INFO) << "Accept new fd " << fd;
+
         auto server_cntl = new ServerTransport(fd);
         server_cntl->StartRead();
     }

@@ -16,23 +16,52 @@
 
 #include <glog/logging.h>
 
+#include <mutex>
+
+#include "urpc/protocol.h"
+
 namespace urpc {
 namespace protocol {
+namespace internal {
+
+static urpc::URPCProtocol urpc_protocol;
+static std::once_flag flag;
+
+static void RegisterAllProtocols(ProtocolManager* manager) {
+    manager->Register(&urpc_protocol);
+}
+
+}  // namespace internal
 
 ProtocolManager* ProtocolManager::singleton() {
     static ProtocolManager manager;
+    std::call_once(internal::flag, internal::RegisterAllProtocols, &manager);
     return &manager;
 }
 
 ProtocolManager::ProtocolManager() {}
 
-void ProtocolManager::Register(BaseProtocol* protocol) {
-    protocols_.insert_or_assign(protocol->Header(), protocol);
+bool ProtocolManager::Register(BaseProtocol* protocol) {
+    assert(strlen(protocol->Header()) == 4);
+    LOG(INFO) << "Register new protocol " << protocol->Header();
+    return protocols_.insert_or_assign(protocol->Header(), protocol).second;
 }
 
 BaseProtocol* ProtocolManager::ProbeProtocol(const IOBuf& buf) {
-    LOG(FATAL) << "Not implemented";
-    return nullptr;
+    if (buf.size() < 4) {
+        return nullptr;
+    }
+
+    std::string header;
+    buf.append_to(&header, 4);
+    LOG(INFO) << "ProbeProtocol header is " << header;
+
+    auto it = protocols_.find(header);
+    if (it == protocols_.end()) {
+        return nullptr;
+    }
+
+    return it->second;
 }
 
 }  // namespace protocol

@@ -61,6 +61,8 @@ int ConnectTransport::ConnectIfNot() {
         return -1;
     }
 
+    LOG(INFO) << "Try connect to " << endpoint2str(endpoint_);
+
     struct sockaddr_in serv_addr;
     bzero((char*)&serv_addr, sizeof(serv_addr));
     serv_addr.sin_family = AF_INET;
@@ -73,9 +75,11 @@ int ConnectTransport::ConnectIfNot() {
 
     fd_ = std::move(sockfd);
     if (rc < 0 && errno == EINPROGRESS) {
+        LOG(INFO) << "FD " << static_cast<int>(fd_) << " is connecting";
         connecting_ = true;
         Poller::singleton()->AddPollOut(this);
     } else {
+        LOG(INFO) << "FD " << static_cast<int>(fd_) << " is connected";
         connected_ = true;
     }
 
@@ -85,6 +89,8 @@ int ConnectTransport::ConnectIfNot() {
 int ConnectTransport::OnConnect() {
     connected_ = true;
     connecting_ = false;
+
+    LOG(INFO) << "ConnectTransport::OnConnect";
     return 0;
 }
 

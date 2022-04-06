@@ -27,7 +27,7 @@ public:
     static ProtocolManager* singleton();
 
     /// Register or update a protocol by the corresponding protocol header.
-    void Register(BaseProtocol* protocol);
+    bool Register(BaseProtocol* protocol);
 
     /// Find the corresponding protocol by the specified header. `nullptr` is
     /// returned if no such protocol exists.

@@ -42,14 +42,23 @@ private:
     google::protobuf::Closure* done_ = nullptr;
 };
 
-class URPCServerCall : public ServerCall {
+class URPCServerCall : public ServerCall, public google::protobuf::Closure {
 public:
-    URPCServerCall(IOBuf buf) : buf_(buf) {}
+    URPCServerCall(uint64_t request_id, std::string service_name,
+                   std::string method_name, IOBuf buf)
+        : request_id_(request_id),
+          buf_(std::move(buf)),
+          service_name_(std::move(service_name)),
+          method_name_(std::move(method_name)) {}
     ~URPCServerCall() override = default;
 
-    void Run(Transport* trans) override;
+    int Serve(Transport* trans) override;
+    void Run() override;
 
 private:
+    const uint64_t request_id_;
+    const std::string service_name_;
+    const std::string method_name_;
     IOBuf buf_;
 };
 
