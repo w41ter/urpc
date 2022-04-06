@@ -18,6 +18,13 @@ target_include_directories(urpc_proto PUBLIC
     ${PROTO_OUTDIR}/protocol/urpc)
 target_link_libraries(urpc_proto protobuf::libprotobuf)
 
+# set(PROTOCOL_FILES
+#     )
+# add_library(urpc_protocol STATIC ${PROTOCOL_FILES})
+# target_include_directories(urpc_protocol PUBLIC "${PROJECT_SOURCE_DIR}/include")
+# target_link_libraries(urpc_protocol pthread glog protobuf::libprotobuf gflags urpc_proto)
+# target_compile_options(urpc_protocol PRIVATE -g)
+
 set(FILES
     urpc.cc
     transport.cc
@@ -35,6 +42,7 @@ set(FILES
     iobuf.cc
     io_context.cc
     server.cc
+    service_holder.cc
 
     protocol/manager.cc
     protocol/urpc/call.cc
@@ -44,4 +52,8 @@ set(FILES
 add_library(urpc STATIC ${FILES})
 target_include_directories(urpc PUBLIC "${PROJECT_SOURCE_DIR}/include")
 target_link_libraries(urpc pthread glog protobuf::libprotobuf gflags urpc_proto)
+# target_link_libraries(urpc
+#     -Wl,--whole-archive
+#     urpc_protocol
+#     -Wl,--no-whole-archive)
 target_compile_options(urpc PRIVATE -g)

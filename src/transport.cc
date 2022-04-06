@@ -18,6 +18,7 @@
 #include <errno.h>
 #include <glog/logging.h>
 
+#include "base.h"
 #include "poller.h"
 
 namespace urpc {
@@ -59,8 +60,10 @@ int Transport::StartWrite(Controller* cntl, IOBuf buf) {
     assert(!buf.empty());
 
     if (current_cntl_) {
+        LOG(INFO) << "Transport::StartWrite insert into pending writes";
         pending_writes_.emplace_back(std::pair{cntl, std::move(buf)});
     } else {
+        LOG(INFO) << "Transport::StartWrite invoke DoWrite()";
         current_cntl_ = cntl;
         write_buf_ = std::move(buf);
         DoWrite();
@@ -70,18 +73,22 @@ int Transport::StartWrite(Controller* cntl, IOBuf buf) {
 }
 
 int Transport::DoWrite() {
+    LOG(INFO) << "Transport::DoWrite";
     if (current_cntl_)
         HandleWriteEvent();
     return 0;
 }
 
 int Transport::HandleReadEvent() {
+    assert(fd_.valid());
     while (true) {
         int n = read_buf_.append_from_file_descriptor(fd_, 1024 * 1024);
         if (n < 0) {
             if (errno == EINTR)
                 continue;
             else if (errno != EAGAIN) {
+                PLOG(ERROR)
+                    << "append from file descriptor " << static_cast<int>(fd_);
                 assert(false && "unknown error");
             } else {
                 assert(poll_in());
@@ -91,8 +98,13 @@ int Transport::HandleReadEvent() {
             // EOF
             assert(false && "TODO handle end of file");
         } else {
+            LOG(INFO) << "Read " << n << " bytes from fd "
+                      << static_cast<int>(fd_);
             // TODO(w41ter) handle result.
-            OnRead(&read_buf_);
+            int res = OnRead(&read_buf_);
+            if (res != ERR_OK) {
+                return res;
+            }
         }
     }
     return 0;
@@ -112,6 +124,7 @@ int Transport::HandleWriteEvent() {
                 break;
             }
         }
+        LOG(INFO) << "Write " << n << " bytes from fd " << static_cast<int>(fd_);
 
         if (write_buf_.empty()) {
             write_buf_.clear();

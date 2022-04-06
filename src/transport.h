@@ -50,7 +50,7 @@ protected:
     OwnedFD fd_;
     IOPortal read_buf_;
     IOBuf write_buf_;
-    Controller* current_cntl_;
+    Controller* current_cntl_{nullptr};
     std::deque<std::pair<Controller*, IOBuf>> pending_writes_;
 };
 
