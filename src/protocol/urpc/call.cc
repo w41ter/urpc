@@ -80,19 +80,40 @@ int URPCClientCall::ProcessResponse(const IOBuf& response) {
 }
 
 int URPCServerCall::Serve(Transport* trans) {
+    transport_ = trans;
     Service* service = ServiceHolder::singleton()->FindService(service_name_);
     const MethodDescriptor* method =
         service->GetDescriptor()->FindMethodByName(method_name_);
     Message* request = service->GetRequestPrototype(method).New();
-    Message* response = service->GetResponsePrototype(method).New();
+    response_ = service->GetResponsePrototype(method).New();
     IOBufAsZeroCopyInputStream in(buf_);
     request->ParseFromZeroCopyStream(&in);
-    service->CallMethod(method, this, request, response, this);
+    service->CallMethod(method, this, request, response_, this);
     return 0;
 }
 
 void URPCServerCall::Run() {
-    LOG(FATAL) << "Not implemented";
+    RPCMeta rpc_meta;
+    auto* resp = rpc_meta.mutable_response();
+    resp->set_error_code(0);
+    rpc_meta.set_attachment_size(0);
+    rpc_meta.set_correlation_id(0);
+
+    const size_t payload_size =
+        rpc_meta.ByteSizeLong() + response_->ByteSizeLong();
+    IOBuf buf;
+    buf.append("URPC");
+
+    uint8_t dst[4];
+    EncodeFixed32(dst, payload_size);
+    buf.append(dst, 4);
+    IOBufAsZeroCopyOutputStream out(&buf);
+    rpc_meta.SerializeToZeroCopyStream(&out);
+    response_->SerializeToZeroCopyStream(&out);
+
+    LOG(INFO) << "URPCServerCall::Run buf len is " << buf.size();
+
+    transport_->StartWrite(this, std::move(buf));
 }
 
 }  // namespace urpc

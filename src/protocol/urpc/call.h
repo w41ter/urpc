@@ -59,6 +59,8 @@ private:
     const uint64_t request_id_;
     const std::string service_name_;
     const std::string method_name_;
+    Transport* transport_;
+    google::protobuf::Message* response_;
     IOBuf buf_;
 };
 

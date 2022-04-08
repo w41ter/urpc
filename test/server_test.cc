@@ -45,7 +45,10 @@ public:
 void EchoServiceImpl::Echo(RpcController* controller,
                            const EchoRequest* request, EchoResponse* response,
                            Closure* done) {
-    LOG(FATAL) << "Not implemented";
+    response->set_message(request->message());
+    response->set_message_count(1);
+    LOG(INFO) << "EchoService::Echo message=" << request->message();
+    done->Run();
 }
 
 void RunEchoService(Server* server) {
@@ -85,18 +88,24 @@ TEST(EchoTest, Basic) {
         std::this_thread::sleep_for(std::chrono::milliseconds(1));
     LOG(INFO) << "Service is bootstrapted";
 
-    ChannelOptions options;
-    Channel channel;
-    if (channel.Init("0.0.0.0:8086", options) != 0) {
-        LOG(FATAL) << "Fail to initialize channel";
-    }
+    std::thread client_handle([&]() {
+        IOContext context;
 
-    EchoService_Stub stub(&channel);
-    auto cntl = NewURPCController();
-    auto resp = new EchoResponse();
-    EchoRequest req;
-    google::protobuf::Closure* done =
-        NewCallback(&HandleEchoResponse, cntl, resp);
-    stub.Echo(cntl, &req, resp, done);
+        ChannelOptions options;
+        Channel channel;
+        if (channel.Init("0.0.0.0:8086", options) != 0) {
+            LOG(FATAL) << "Fail to initialize channel";
+        }
+
+        EchoService_Stub stub(&channel);
+        auto cntl = NewURPCController();
+        auto resp = new EchoResponse();
+        EchoRequest req;
+        req.set_message("hello world");
+        google::protobuf::Closure* done =
+            NewCallback(&HandleEchoResponse, cntl, resp);
+        stub.Echo(cntl, &req, resp, done);
+    });
     server_handle.join();
+    client_handle.join();
 }

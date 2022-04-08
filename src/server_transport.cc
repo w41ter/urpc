@@ -28,7 +28,8 @@ namespace urpc {
 ServerTransport::~ServerTransport() {}
 
 int ServerTransport::OnWriteDone(Controller* cntl) {
-    LOG(FATAL) << "TODO";
+    Reset(ERR_OK, "");
+    delete this;
     return 0;
 }
 
