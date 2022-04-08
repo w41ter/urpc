@@ -124,7 +124,7 @@ int Transport::HandleWriteEvent() {
                 break;
             }
         }
-        LOG(INFO) << "Write " << n << " bytes from fd " << static_cast<int>(fd_);
+        LOG(INFO) << "Write " << n << " bytes to fd " << static_cast<int>(fd_);
 
         if (write_buf_.empty()) {
             write_buf_.clear();
