@@ -15,6 +15,7 @@
 #include "protocol.h"
 
 #include <glog/logging.h>
+#include <google/protobuf/message.h>
 #include <string.h>
 
 #include "../../client_transport.h"
@@ -39,30 +40,37 @@ int URPCProtocol::ParseRequest(IOBuf* buf, ServerCall** server_call) {
         return ERR_MISMATCH;
     }
 
+    if (buf->size() < 12) {
+        return ERR_TOO_SMALL;
+    }
+
     std::vector<uint8_t> len_buf(4, 0);
     if (buf->copy_to(len_buf.data(), 4, 4) < 4) {
         return ERR_TOO_SMALL;
     }
 
-    uint32_t length = DecodeFixed32(len_buf.data());
-    LOG(INFO) << "payload length is " << length;
-    LOG(INFO) << "buf length is " << buf->size();
-    if (buf->size() < 8 + length) {
+    const size_t meta_size = DecodeFixed32(len_buf.data());
+
+    if (buf->copy_to(len_buf.data(), 4, 8) < 4) {
+        return ERR_TOO_SMALL;
+    }
+    const size_t body_size = DecodeFixed32(len_buf.data());
+    if (buf->size() < 12 + meta_size + body_size) {
         return ERR_TOO_SMALL;
     }
 
-    IOBuf data;
-    buf->pop_front(8);
-    buf->cutn(&data, length);
+    IOBuf meta_data, payload;
+    buf->pop_front(12);
+    buf->cutn(&meta_data, meta_size);
+    buf->cutn(&payload, body_size);
 
-    IOBufAsZeroCopyInputStream in(data);
+    IOBufAsZeroCopyInputStream in(meta_data);
     RPCMeta rpc_meta;
-    rpc_meta.ParseFromZeroCopyStream(&in);
-    data.pop_front(in.ByteCount());
+    rpc_meta.ParsePartialFromZeroCopyStream(&in);
     auto request_id = rpc_meta.correlation_id();
     *server_call =
         new URPCServerCall(request_id, rpc_meta.request().service_name(),
-                           rpc_meta.request().method_name(), std::move(data));
+                           rpc_meta.request().method_name(), std::move(payload));
     return ERR_OK;
 }
 

@@ -24,6 +24,8 @@
 #include "../../iobuf.h"
 #include "../../service_holder.h"
 #include "google/protobuf/descriptor.h"
+#include "google/protobuf/io/coded_stream.h"
+#include "google/protobuf/io/zero_copy_stream.h"
 #include "urpc_meta.pb.h"
 
 using namespace google::protobuf;
@@ -51,17 +53,23 @@ void URPCClientCall::IssueRPC(ClientTransport* transport,
     rpc_meta.set_attachment_size(0);
     rpc_meta.set_correlation_id(0);
 
-    const size_t payload_size =
-        rpc_meta.ByteSizeLong() + request->ByteSizeLong();
     IOBuf buf;
     buf.append("URPC");
 
     uint8_t dst[4];
-    EncodeFixed32(dst, payload_size);
+    const size_t meta_size = rpc_meta.ByteSizeLong();
+    EncodeFixed32(dst, meta_size);
     buf.append(dst, 4);
+
+    const size_t body_size = request->ByteSizeLong();
+    EncodeFixed32(dst, body_size);
+    buf.append(dst, 4);
+
     IOBufAsZeroCopyOutputStream out(&buf);
     rpc_meta.SerializeToZeroCopyStream(&out);
+    LOG(INFO) << "RPC Meta len " << out.ByteCount();
     request->SerializeToZeroCopyStream(&out);
+    LOG(INFO) << "RPC Meta + Request len " << out.ByteCount();
 
     LOG(INFO) << "URPCClientCall::IssueRPC buf len is " << buf.size();
 
