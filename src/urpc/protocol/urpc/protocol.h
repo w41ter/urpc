@@ -11,26 +11,21 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+#pragma once
 
-#include <glog/logging.h>
-#include <string.h>
-
-#include "../../coding.h"
-#include "../base.h"
-#include "../manager.h"
-#include "call.h"
+#include "urpc/protocol/base.h"
 
 namespace urpc {
 namespace protocol {
+namespace urpc {
 
 class URPCProtocol final : public BaseProtocol {
 public:
-    URPCProtocol(ProtocolManager* mgr) { mgr->Register(this); }
     ~URPCProtocol() override = default;
 
     /// A constant bytes which always appears in the header of network message
     /// packets.
-    const char* Header() const override { return "ECHO"; }
+    const char* Header() const override { return "URPC"; }
 
     /// Parse the protocol request. If the payload isn't enough, ERR_TOO_SMALL
     /// is returned. If the header is mismatched, ERR_MISMATCH is returned.
@@ -38,39 +33,11 @@ public:
 
     /// Parse the protocol response. If the payload isn't enough, ERR_TOO_SMALL
     /// is returned. If the header is mismatched, ERR_MISMATCH is returned.
-    int ParseResponse(IOBuf* buf) override {
-        LOG(FATAL) << "Not implemented";
-        return 0;
-    }
+    int ParseResponse(IOBuf* buf, ClientTransport* transport) override;
+
+    static bool registered;
 };
 
-int URPCProtocol::ParseRequest(const IOBuf& buf, ServerCall** server_call) {
-    std::vector<uint8_t> header;
-    if (buf.peek(&header, 4) < 4) {
-        return ERR_TOO_SMALL;
-    }
-
-    if (strcmp(reinterpret_cast<const char*>(header.data()), Header())) {
-        return ERR_MISMATCH;
-    }
-
-    IOBuf new_buf = buf.slice(4);
-    std::vector<uint8_t> len_buf;
-    if (new_buf.peek(&len_buf, 4) < 4) {
-        return ERR_TOO_SMALL;
-    }
-
-    uint32_t length = DecodeFixed32(len_buf.data());
-    if (new_buf.size() < 4 + length) {
-        return ERR_TOO_SMALL;
-    }
-
-    IOBuf data = buf.slice(8, 8 + length);
-    *server_call = new EchoServerCall(std::move(data));
-    return ERR_OK;
-}
-
-static URPCProtocol echo_protocol(ProtocolManager::singleton());
-
+}  // namespace urpc
 }  // namespace protocol
 }  // namespace urpc

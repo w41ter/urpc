@@ -15,12 +15,15 @@
 #include "acceptor.h"
 
 #include <errno.h>
-#include <glog/logging.h>
 #include <sys/socket.h>
 #include <sys/types.h>
 
-#include "poller.h"
-#include "server_transport.h"
+#include <string>
+
+#include <glog/logging.h>
+
+#include "urpc/poller.h"
+#include "urpc/server_transport.h"
 
 namespace urpc {
 
@@ -39,9 +42,8 @@ int Acceptor::HandleReadEvent() {
                 break;
             else if (errno == EINTR)
                 continue;
-            else {
+            else
                 PLOG(FATAL) << "accept4";
-            }
         }
 
         LOG(INFO) << "Accept new fd " << fd;

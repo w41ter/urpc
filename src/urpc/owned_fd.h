@@ -23,7 +23,7 @@ namespace urpc {
 class OwnedFD {
 public:
     OwnedFD() : fd_(-1) {}
-    OwnedFD(int fd) : fd_(fd) {}
+    explicit OwnedFD(int fd) : fd_(fd) {}
     OwnedFD(const OwnedFD&) = delete;
     OwnedFD(OwnedFD&& rhs) : fd_(rhs.fd_) { rhs.fd_ = -1; }
     ~OwnedFD() {

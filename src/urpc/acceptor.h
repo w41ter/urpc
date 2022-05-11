@@ -11,31 +11,29 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+#pragma once
 
-#include "../../client_call.h"
-#include "../../server_call.h"
-#include "../../iobuf.h"
+#include <string>
+
+#include "base.h"
+#include "owned_fd.h"
 
 namespace urpc {
-namespace protocol {
 
-class EchoClientCall : public ClientCall {
+class Acceptor : public IOHandle {
 public:
-    ~EchoClientCall() override = default;
+    explicit Acceptor(int listen_fd);
+    ~Acceptor() override;
 
-    void OnComplete() override;
-};
+    int fd() const override { return listen_fd_; }
 
-class EchoServerCall : public ServerCall {
-public:
-    EchoServerCall(IOBuf buf) : buf_(buf) {}
-    ~EchoServerCall() override = default;
+    int HandleReadEvent() override;
+    int HandleWriteEvent() override;
 
-    void Run(Transport* trans) override;
+    void Reset(int code, std::string reason) override;
 
 private:
-    IOBuf buf_;
+    OwnedFD listen_fd_;
 };
 
-}  // namespace protocol
 }  // namespace urpc

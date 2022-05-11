@@ -14,12 +14,14 @@
 
 #pragma once
 
-#include <google/protobuf/descriptor.h>
-#include <google/protobuf/service.h>
-#include <urpc/server.h>  // ServiceOwnership
-
 #include <unordered_map>
 #include <vector>
+#include <string>
+
+#include <google/protobuf/descriptor.h>
+#include <google/protobuf/service.h>
+
+#include <urpc/server.h>  // ServiceOwnership
 
 namespace urpc {
 

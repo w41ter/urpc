@@ -13,10 +13,13 @@
 // limitations under the License.
 #pragma once
 
+#include <string>
+#include <utility>
+
 #include <protocol/urpc/urpc_meta.pb.h>
 
-#include "../../client_call.h"
-#include "../../server_call.h"
+#include "urpc/client_call.h"
+#include "urpc/server_call.h"
 
 namespace urpc {
 namespace protocol {

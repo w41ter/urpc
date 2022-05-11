@@ -23,6 +23,7 @@
 
 #include <netinet/in.h>  // in_addr
 
+#include <string>
 #include <iostream>  // std::ostream
 
 namespace urpc {

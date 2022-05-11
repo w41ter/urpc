@@ -11,9 +11,11 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+#pragma once
+
+#include <urpc/endpoint.h>
 
 #include <google/protobuf/service.h>
-#include <urpc/endpoint.h>
 
 namespace urpc {
 

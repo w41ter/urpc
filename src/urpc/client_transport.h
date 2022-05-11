@@ -14,24 +14,38 @@
 
 #pragma once
 
-#include "protocol/base.h"
-#include "transport.h"
+#include <unordered_map>
+
+#include <urpc/endpoint.h>
+
+#include "urpc/client_call.h"
+#include "urpc/connect_transport.h"
+#include "urpc/iobuf.h"
+#include "urpc/protocol/base.h"
 
 namespace urpc {
 
-class ServerTransport : public Transport {
+class ClientTransport : public ConnectTransport {
 public:
-    ServerTransport(int fd) : Transport(fd) {}
-    ~ServerTransport() override;
+    explicit ClientTransport(EndPoint endpoint) : ConnectTransport(endpoint) {}
+    ~ClientTransport() override;
+
+    ClientCall* TakeClientCall(uint64_t request_id);
+    void InstallClientCall(uint64_t request_id, ClientCall* call);
+    uint64_t NextRequestId() { return next_request_id_++; }
 
 protected:
     int OnWriteDone(Controller* cntl) override;
     int OnRead(IOBuf* buf) override;
 
 private:
+    uint64_t next_request_id_{1};
+
     /// The last successfully parsed protocol, used to optimize protocol
     /// lookuping.
     protocol::BaseProtocol* protocol_{nullptr};
+
+    std::unordered_map<uint64_t, ClientCall*> pending_calls_;
 };
 
 }  // namespace urpc

@@ -14,9 +14,9 @@
 
 #include "manager.h"
 
-#include <glog/logging.h>
-
 #include <mutex>
+
+#include <glog/logging.h>
 
 #include "urpc/protocol.h"
 

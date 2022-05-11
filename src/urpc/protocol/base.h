@@ -14,8 +14,8 @@
 
 #pragma once
 
-#include "../iobuf.h"
-#include "../server_call.h"
+#include "urpc/iobuf.h"
+#include "urpc/server_call.h"
 
 namespace urpc {
 

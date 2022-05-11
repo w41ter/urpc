@@ -12,28 +12,26 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "call.h"
+#pragma once
 
-#include <glog/logging.h>
-
-#include "../../coding.h"
+#include "protocol/base.h"
+#include "transport.h"
 
 namespace urpc {
-namespace protocol {
 
-void EchoClientCall::OnComplete() { LOG(FATAL) << "Not implemented"; }
+class ServerTransport : public Transport {
+public:
+    explicit ServerTransport(int fd) : Transport(fd) {}
+    ~ServerTransport() override;
 
-void EchoServerCall::Run(Transport *trans) {
-    IOBuf buf;
-    buf.append(reinterpret_cast<const uint8_t *>("ECHO"), 4);
+protected:
+    int OnWriteDone(Controller* cntl) override;
+    int OnRead(IOBuf* buf) override;
 
-    uint8_t buf_32[4];
-    EncodeFixed32(buf_32, buf_.size());
-    buf.append(buf_32, 4);
-    buf.append(buf_);
+private:
+    /// The last successfully parsed protocol, used to optimize protocol
+    /// lookuping.
+    protocol::BaseProtocol* protocol_{nullptr};
+};
 
-    trans->StartWrite(this, std::move(buf));
-}
-
-}  // namespace protocol
 }  // namespace urpc

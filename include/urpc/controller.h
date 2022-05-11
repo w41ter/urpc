@@ -14,10 +14,10 @@
 
 #pragma once
 
+#include <string>
+
 #include <google/protobuf/service.h>
 #include <google/protobuf/stubs/callback.h>
-
-#include <string>
 
 namespace urpc {
 
