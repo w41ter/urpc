@@ -14,6 +14,8 @@
 
 #include "service_holder.h"
 
+#include <string>
+
 #include <glog/logging.h>
 
 #include "urpc/server.h"

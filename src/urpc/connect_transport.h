@@ -14,15 +14,17 @@
 
 #pragma once
 
+#include <string>
+
 #include <urpc/endpoint.h>
 
-#include "transport.h"
+#include "urpc/transport.h"
 
 namespace urpc {
 
 class ConnectTransport : public Transport {
 public:
-    ConnectTransport(EndPoint endpoint) : endpoint_(endpoint){};
+    explicit ConnectTransport(EndPoint endpoint) : endpoint_(endpoint) {}
     ~ConnectTransport() override;
 
 protected:

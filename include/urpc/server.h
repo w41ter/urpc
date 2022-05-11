@@ -14,11 +14,11 @@
 
 #pragma once
 
-#include <google/protobuf/service.h>
-
 #include <memory>
 
-#include "endpoint.h"
+#include <urpc/endpoint.h>
+
+#include <google/protobuf/service.h>
 
 namespace urpc {
 

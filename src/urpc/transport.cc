@@ -16,6 +16,10 @@
 
 #include <assert.h>
 #include <errno.h>
+
+#include <string>
+#include <utility>
+
 #include <glog/logging.h>
 
 #include "base.h"
@@ -32,7 +36,7 @@ void Transport::Reset(int code, std::string reason) {
     read_buf_.clear();
 
     if (current_cntl_) {
-        // TODO
+        // TODO(walter) set error code
         current_cntl_->SetFailed(code, reason);
         current_cntl_ = nullptr;
     }
@@ -86,9 +90,9 @@ int Transport::HandleReadEvent() {
     while (true) {
         int n = read_buf_.append_from_file_descriptor(fd_, 1024 * 1024);
         if (n < 0) {
-            if (errno == EINTR)
+            if (errno == EINTR) {
                 continue;
-            else if (errno != EAGAIN) {
+            } else if (errno != EAGAIN) {
                 PLOG(ERROR)
                     << "append from file descriptor " << static_cast<int>(fd_);
                 assert(false && "unknown error");
@@ -116,11 +120,11 @@ int Transport::HandleWriteEvent() {
     while (!write_buf_.empty()) {
         int n = write_buf_.cut_into_file_descriptor(fd_);
         if (n < 0) {
-            if (errno == EINTR)
+            if (errno == EINTR) {
                 continue;
-            else if (errno != EAGAIN)
+            } else if (errno != EAGAIN) {
                 assert(false && "unknown error");
-            else {
+            } else {
                 if (!poll_out())
                     Poller::singleton()->AddPollOut(this);
                 break;

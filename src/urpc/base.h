@@ -54,7 +54,7 @@ private:
 
 class IOHandleAccessor {
 public:
-    IOHandleAccessor(IOHandle* handle) : handle_(handle) {}
+    explicit IOHandleAccessor(IOHandle* handle) : handle_(handle) {}
 
     void SetPollIn() { handle_->flags_ |= IOHandle::kPollIn; }
     void SetPollOut() { handle_->flags_ |= IOHandle::kPollOut; }

@@ -14,16 +14,19 @@
 
 #include "connect_transport.h"
 
-#include <asm-generic/errno.h>
-#include <glog/logging.h>
+#include <errno.h>
 #include <sys/socket.h>
 #include <sys/types.h>
-#include <urpc/endpoint.h>
 
 #include <utility>
+#include <string>
 
-#include "owned_fd.h"
-#include "poller.h"
+#include <urpc/endpoint.h>
+
+#include <glog/logging.h>
+
+#include "urpc/owned_fd.h"
+#include "urpc/poller.h"
 
 namespace urpc {
 
@@ -64,7 +67,7 @@ int ConnectTransport::ConnectIfNot() {
     LOG(INFO) << "Try connect to " << endpoint2str(endpoint_);
 
     struct sockaddr_in serv_addr;
-    bzero((char*)&serv_addr, sizeof(serv_addr));
+    bzero(reinterpret_cast<char*>(&serv_addr), sizeof(serv_addr));
     serv_addr.sin_family = AF_INET;
     serv_addr.sin_addr = endpoint_.ip;
     serv_addr.sin_port = htons(endpoint_.port);

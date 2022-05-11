@@ -4,6 +4,7 @@ BasedOnStyle:  Google
 ColumnLimit:     80
 TabWidth:        8
 IndentWidth:     4
+SortIncludes: false
 AccessModifierOffset: -4
 AllowShortBlocksOnASingleLine: Empty
 AllowShortIfStatementsOnASingleLine: Never

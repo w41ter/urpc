@@ -42,7 +42,7 @@ template <typename T>
 class owner_ptr {
 public:
     owner_ptr() : ptr_(nullptr) {}
-    owner_ptr(T* ptr) : ptr_(ptr) {}
+    explicit owner_ptr(T* ptr) : ptr_(ptr) {}
 
     ~owner_ptr() {
         if (ptr_)

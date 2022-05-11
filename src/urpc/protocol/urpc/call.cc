@@ -15,17 +15,16 @@
 #include "call.h"
 
 #include <glog/logging.h>
-#include <google/protobuf/descriptor.h>
 #include <google/protobuf/message.h>
 #include <google/protobuf/service.h>
+#include <google/protobuf/descriptor.h>
+#include <google/protobuf/io/coded_stream.h>
+#include <google/protobuf/io/zero_copy_stream.h>
 
-#include "../../client_transport.h"
-#include "../../coding.h"
-#include "../../iobuf.h"
-#include "../../service_holder.h"
-#include "google/protobuf/descriptor.h"
-#include "google/protobuf/io/coded_stream.h"
-#include "google/protobuf/io/zero_copy_stream.h"
+#include "urpc/client_transport.h"
+#include "urpc/coding.h"
+#include "urpc/iobuf.h"
+#include "urpc/service_holder.h"
 #include "urpc_meta.pb.h"
 
 using namespace google::protobuf;
