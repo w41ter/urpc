@@ -91,6 +91,8 @@ int ConnectTransport::OnConnect() {
     connecting_ = false;
 
     LOG(INFO) << "ConnectTransport::OnConnect";
+    StartRead();
+
     return 0;
 }
 

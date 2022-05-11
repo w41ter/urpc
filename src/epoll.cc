@@ -38,8 +38,11 @@ public:
     int RemoveConsumer(IOHandle*) override;
 
 private:
+    void DestoryDelayedIOHandles();
+
     OwnedFD pollfd_;
-    std::unordered_set<uintptr_t> handles;
+    std::unordered_set<IOHandle*> handles_;
+    std::vector<IOHandle*> delayed_destories_;
 };
 
 EPoller::EPoller() {
@@ -47,6 +50,7 @@ EPoller::EPoller() {
     if (fd < 0) {
         PLOG(FATAL) << "epoll_create1";
     }
+    LOG(INFO) << "epoll_create1 " << fd;
     pollfd_ = fd;
 }
 
@@ -64,15 +68,20 @@ int EPoller::PollOnce() {
         struct epoll_event* event = &events[i];
         auto handle = reinterpret_cast<IOHandle*>(event->data.ptr);
         if (event->events & EPOLLOUT) {
-            handle->HandleWriteEvent();
-        } else if (event->events & EPOLLIN) {
-            handle->HandleReadEvent();
-        } else {
-            assert(false && "unknown event");
+            if (handle->HandleWriteEvent() != ERR_OK) {
+                delayed_destories_.push_back(handle);
+                continue;
+            }
+        }
+        if (event->events & EPOLLIN) {
+            if (handle->HandleReadEvent() != ERR_OK) {
+                delayed_destories_.push_back(handle);
+                continue;
+            }
         }
     }
 
-    return 0;
+    return n;
 }
 
 int EPoller::AddPollIn(IOHandle* handle) {
@@ -86,11 +95,14 @@ int EPoller::AddPollIn(IOHandle* handle) {
     if (handle->poll_out()) {
         op = EPOLL_CTL_MOD;
         ev.events |= EPOLLOUT;
+    } else {
+        handle->AddRef();
+        handles_.insert(handle);
     }
     if (epoll_ctl(pollfd_, op, handle->fd(), &ev) < 0) {
-        PLOG(FATAL) << "epoll_ctl";
+        PLOG(FATAL) << "epoll_ctl " << pollfd_ << " new fd " << handle->fd();
     }
-    LOG(INFO) << "AddPollIn fd is " << handle->fd();
+    LOG(INFO) << "AddPollIn " << static_cast<int>(pollfd_) << " fd is " << handle->fd();
 
     IOHandleAccessor(handle).SetPollIn();
 
@@ -108,6 +120,9 @@ int EPoller::AddPollOut(IOHandle* handle) {
     if (handle->poll_in()) {
         op = EPOLL_CTL_MOD;
         ev.events |= EPOLLIN;
+    } else {
+        handle->AddRef();
+        handles_.insert(handle);
     }
     if (epoll_ctl(pollfd_, op, handle->fd(), &ev) < 0) {
         PLOG(FATAL) << "epoll_ctl";
@@ -124,6 +139,8 @@ int EPoller::RemoveConsumer(IOHandle* handle) {
     int res = epoll_ctl(pollfd_, EPOLL_CTL_DEL, handle->fd(), NULL);
     if (res < 0 && errno != ENOENT) {
         PLOG(FATAL) << "epoll_ctl";
+    } else {
+        delayed_destories_.push_back(handle);
     }
 
     IOHandleAccessor accessor(handle);
@@ -131,6 +148,14 @@ int EPoller::RemoveConsumer(IOHandle* handle) {
     accessor.ClearPollOut();
 
     return 0;
+}
+
+void EPoller::DestoryDelayedIOHandles() {
+    for (auto handle : delayed_destories_) {
+        handle->RelRef();
+        handles_.erase(handle);
+    }
+    delayed_destories_.clear();
 }
 
 Poller* poller() {

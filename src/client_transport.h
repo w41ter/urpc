@@ -29,12 +29,16 @@ public:
     ~ClientTransport() override;
 
     ClientCall* TakeClientCall(uint64_t request_id);
+    void InstallClientCall(uint64_t request_id, ClientCall* call);
+    uint64_t NextRequestId() { return next_request_id_++; }
 
 protected:
     int OnWriteDone(Controller* cntl) override;
     int OnRead(IOBuf* buf) override;
 
 private:
+    uint64_t next_request_id_{1};
+
     /// The last successfully parsed protocol, used to optimize protocol
     /// lookuping.
     protocol::BaseProtocol* protocol_{nullptr};

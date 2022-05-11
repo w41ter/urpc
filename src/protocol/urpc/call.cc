@@ -45,13 +45,15 @@ void URPCClientCall::IssueRPC(ClientTransport* transport,
     response_ = response;
     done_ = done;
 
+    uint64_t request_id = transport_->NextRequestId();
+
     RPCMeta rpc_meta;
     auto* req = rpc_meta.mutable_request();
     req->set_service_name(method->service()->full_name());
     req->set_method_name(method->name());
     req->set_log_id(0);
     rpc_meta.set_attachment_size(0);
-    rpc_meta.set_correlation_id(0);
+    rpc_meta.set_correlation_id(request_id);
 
     IOBuf buf;
     buf.append("URPC");
@@ -73,6 +75,7 @@ void URPCClientCall::IssueRPC(ClientTransport* transport,
 
     LOG(INFO) << "URPCClientCall::IssueRPC buf len is " << buf.size();
 
+    transport_->InstallClientCall(request_id, this);
     transport->StartWrite(this, std::move(buf));
 }
 
@@ -105,7 +108,7 @@ void URPCServerCall::Run() {
     auto* resp = rpc_meta.mutable_response();
     resp->set_error_code(0);
     rpc_meta.set_attachment_size(0);
-    rpc_meta.set_correlation_id(0);
+    rpc_meta.set_correlation_id(request_id_);
 
     const size_t payload_size =
         rpc_meta.ByteSizeLong() + response_->ByteSizeLong();

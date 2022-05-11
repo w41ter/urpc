@@ -28,8 +28,7 @@ namespace urpc {
 ServerTransport::~ServerTransport() {}
 
 int ServerTransport::OnWriteDone(Controller* cntl) {
-    Reset(ERR_OK, "");
-    delete this;
+    cntl->OnComplete();
     return 0;
 }
 

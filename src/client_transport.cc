@@ -60,4 +60,8 @@ ClientCall* ClientTransport::TakeClientCall(uint64_t request_id) {
     return client_call;
 }
 
+void ClientTransport::InstallClientCall(uint64_t request_id, ClientCall* call) {
+    pending_calls_.insert({request_id, call});
+}
+
 }  // namespace urpc

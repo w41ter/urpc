@@ -16,6 +16,8 @@
 
 #include <string>
 
+#include "utils/owner_ptr.h"
+
 namespace urpc {
 
 enum ErrCode : int {
@@ -28,7 +30,7 @@ enum ErrCode : int {
     ERR_NOT_SUPPORTED = 1003,
 };
 
-class IOHandle {
+class IOHandle : public utils::RefCount {
     friend class IOHandleAccessor;
 
 public:
@@ -47,7 +49,7 @@ public:
 private:
     enum : unsigned { kPollIn = 1 << 0, kPollOut = 1 << 1 };
 
-    unsigned flags_;
+    unsigned flags_{0};
 };
 
 class IOHandleAccessor {
