@@ -68,9 +68,10 @@ int URPCProtocol::ParseRequest(IOBuf* buf, ServerCall** server_call) {
     RPCMeta rpc_meta;
     rpc_meta.ParsePartialFromZeroCopyStream(&in);
     auto request_id = rpc_meta.correlation_id();
-    *server_call =
-        new URPCServerCall(request_id, rpc_meta.request().service_name(),
-                           rpc_meta.request().method_name(), std::move(payload));
+    LOG(INFO) << "Receive RPC with request id " << request_id;
+    *server_call = new URPCServerCall(
+        request_id, rpc_meta.request().service_name(),
+        rpc_meta.request().method_name(), std::move(payload));
     return ERR_OK;
 }
 
@@ -103,8 +104,9 @@ int URPCProtocol::ParseResponse(IOBuf* buf, ClientTransport* transport) {
     RPCMeta rpc_meta;
     rpc_meta.ParseFromZeroCopyStream(&in);
     auto request_id = rpc_meta.correlation_id();
-    auto cntl = transport->TakeClientCall(rpc_meta.correlation_id());
+    auto cntl = transport->TakeClientCall(request_id);
     if (!cntl) {
+        LOG(INFO) << "request id " << request_id << " not found";
         // TODO(walter) return error and close transport.
         return -1;
     }

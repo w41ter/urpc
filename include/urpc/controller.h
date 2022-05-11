@@ -19,12 +19,13 @@
 
 #include <string>
 
-
 namespace urpc {
 
 using google::protobuf::Closure;
 
 class Controller : public google::protobuf::RpcController {
+    friend class ServerTransport;
+
 public:
     ~Controller() override;
 

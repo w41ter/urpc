@@ -16,9 +16,18 @@
 
 namespace urpc {
 
+enum LoopMode {
+    LOOP_FOREVER = 0,
+    LOOP_ONCE = 1,
+};
+
 class IOContext final {
 public:
+    IOContext(LoopMode = LOOP_FOREVER);
     ~IOContext();
+
+private:
+    LoopMode mode_;
 };
 
 }  // namespace urpc

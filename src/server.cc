@@ -22,6 +22,7 @@
 
 #include "acceptor.h"
 #include "service_holder.h"
+#include "utils/owner_ptr.h"
 
 using namespace google::protobuf;
 
@@ -34,7 +35,7 @@ public:
     int Start(EndPoint endpoint);
 
 private:
-    std::unique_ptr<Acceptor> acceptor_;
+    utils::owner_ptr<Acceptor> acceptor_;
 };
 
 int ServerImpl::Start(EndPoint endpoint) {
@@ -42,7 +43,8 @@ int ServerImpl::Start(EndPoint endpoint) {
     if (fd < 0)
         return fd;
 
-    acceptor_ = std::make_unique<Acceptor>(fd);
+    LOG(INFO) << "Server make Acceptor " << fd;
+    acceptor_.reset(new Acceptor(fd));
     return 0;
 }
 

@@ -26,6 +26,7 @@
 #include <ratio>
 #include <thread>
 
+#include "google/protobuf/stubs/callback.h"
 #include "urpc/endpoint.h"
 #include "urpc/io_context.h"
 
@@ -57,21 +58,36 @@ void RunEchoService(Server* server) {
                        ServiceOwnership::SERVER_OWNS_SERVICE);
 }
 
-void HandleEchoResponse(Controller* cntl, EchoResponse* response) {
-    std::unique_ptr<Controller> cntl_guard(cntl);
-    std::unique_ptr<EchoResponse> response_guard(response);
-
-    if (cntl->Failed()) {
-        LOG(WARNING) << "Fail to send EchoRequest, " << cntl->ErrorText();
-        return;
+class HandleResponseClosure : public Closure {
+public:
+    HandleResponseClosure(Controller* cntl, EchoResponse* response,
+                          std::atomic<bool>* exit_flag)
+        : cntl_(cntl), resp_(response), exit_flag_(exit_flag) {}
+    ~HandleResponseClosure() override {
+        LOG(INFO) << "Set exit flag to true";
+        exit_flag_->store(true, std::memory_order_release);
     }
-    LOG(INFO) << "Received response success";
-}
+
+    void Run() override {
+        if (cntl_->Failed()) {
+            LOG(WARNING) << "Fail to send EchoRequest, " << cntl_->ErrorText();
+        } else {
+            LOG(INFO) << "Receive response success";
+        }
+        delete this;
+    }
+
+private:
+    std::unique_ptr<Controller> cntl_;
+    std::unique_ptr<EchoResponse> resp_;
+    std::atomic<bool>* exit_flag_;
+};
 
 TEST(EchoTest, Basic) {
     google::InstallFailureSignalHandler();
 
     std::atomic<bool> ready = false;
+    std::atomic<bool> exit = false;
     std::thread server_handle([&]() {
         Server server;
         RunEchoService(&server);
@@ -81,7 +97,10 @@ TEST(EchoTest, Basic) {
         }
 
         ready.store(true, std::memory_order_release);
-        IOContext context;
+        while (!exit.load(std::memory_order_acquire)) {
+            IOContext context(LOOP_ONCE);
+        }
+        LOG(INFO) << "Server thread exit";
     });
 
     while (!ready.load(std::memory_order_acquire))
@@ -89,8 +108,6 @@ TEST(EchoTest, Basic) {
     LOG(INFO) << "Service is bootstrapted";
 
     std::thread client_handle([&]() {
-        IOContext context;
-
         ChannelOptions options;
         Channel channel;
         if (channel.Init("0.0.0.0:8086", options) != 0) {
@@ -103,8 +120,14 @@ TEST(EchoTest, Basic) {
         EchoRequest req;
         req.set_message("hello world");
         google::protobuf::Closure* done =
-            NewCallback(&HandleEchoResponse, cntl, resp);
+            NewCallback(new HandleResponseClosure(cntl, resp, &exit),
+                        &HandleResponseClosure::Run);
         stub.Echo(cntl, &req, resp, done);
+        while (!exit.load(std::memory_order_acquire)) {
+            LOG(INFO) << "Exit flag is " << exit.load(std::memory_order_relaxed);
+            IOContext context(LOOP_ONCE);
+        }
+        LOG(INFO) << "Client thread exit";
     });
     server_handle.join();
     client_handle.join();

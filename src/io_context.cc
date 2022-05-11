@@ -21,11 +21,13 @@
 
 namespace urpc {
 
+IOContext::IOContext(LoopMode mode) : mode_(mode) {}
+
 IOContext::~IOContext() {
-    for (;;) {
+    do {
         Poller::singleton()->PollOnce();
         std::this_thread::sleep_for(std::chrono::seconds(1));
-    }
+    } while (mode_ == LOOP_FOREVER);
 }
 
 }  // namespace urpc

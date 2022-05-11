@@ -51,6 +51,8 @@ void Transport::Reset(int code, std::string reason) {
 int Transport::StartRead() {
     if (!poll_in()) {
         Poller::singleton()->AddPollIn(this);
+    } else {
+        LOG(INFO) << "Transport::StartRead already pollin";
     }
 
     return 0;
