@@ -30,7 +30,9 @@ ServiceHolder* ServiceHolder::singleton() {
 ServiceHolder::ServiceHolder() = default;
 
 ServiceHolder::~ServiceHolder() {
-    for (auto&& service : owned_services_) { delete service; }
+    for (auto&& service : owned_services_) {
+        delete service;
+    }
 }
 
 int ServiceHolder::AddService(Service* service, ServiceOwnership ownership) {

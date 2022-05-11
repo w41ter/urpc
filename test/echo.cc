@@ -16,9 +16,9 @@
 
 #include <glog/logging.h>
 #include <netinet/in.h>
+#include <sys/epoll.h>
 #include <sys/socket.h>
 #include <sys/types.h>
-#include <sys/epoll.h>
 
 EchoService EchoService::Bootstrap() {
     int fd = socket(AF_INET, SOCK_CLOEXEC | SOCK_STREAM | SOCK_CLOEXEC, 0);
@@ -55,7 +55,6 @@ bool EchoService::TryRun() {
             PLOG(FATAL) << "accept4";
         return false;
     }
-    
-    
+
     return true;
 }

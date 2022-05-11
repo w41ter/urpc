@@ -617,7 +617,9 @@ void IOBuf::_push_or_move_back_ref_to_bigview(const BlockRef& r) {
     // resize, don't modify bv until new_refs is fully assigned
     const uint32_t new_cap = _bv.capacity() * 2;
     BlockRef* new_refs = iobuf::acquire_blockref_array(new_cap);
-    for (uint32_t i = 0; i < _bv.nref; ++i) { new_refs[i] = _bv.ref_at(i); }
+    for (uint32_t i = 0; i < _bv.nref; ++i) {
+        new_refs[i] = _bv.ref_at(i);
+    }
     new_refs[_bv.nref++] = r;
 
     // Change other variables
@@ -945,7 +947,6 @@ ssize_t IOBuf::pcut_into_file_descriptor(int fd, off_t offset,
     return nw;
 }
 
-
 ssize_t IOBuf::pcut_multiple_into_file_descriptor(int fd, off_t offset,
                                                   IOBuf* const* pieces,
                                                   size_t count) {
@@ -989,7 +990,9 @@ ssize_t IOBuf::pcut_multiple_into_file_descriptor(int fd, off_t offset,
 
 void IOBuf::append(const IOBuf& other) {
     const size_t nref = other._ref_num();
-    for (size_t i = 0; i < nref; ++i) { _push_back_ref(other._ref_at(i)); }
+    for (size_t i = 0; i < nref; ++i) {
+        _push_back_ref(other._ref_at(i));
+    }
 }
 
 void IOBuf::append(const Movable& movable_other) {
@@ -998,7 +1001,9 @@ void IOBuf::append(const Movable& movable_other) {
     } else {
         urpc::IOBuf& other = movable_other.value();
         const size_t nref = other._ref_num();
-        for (size_t i = 0; i < nref; ++i) { _move_back_ref(other._ref_at(i)); }
+        for (size_t i = 0; i < nref; ++i) {
+            _move_back_ref(other._ref_at(i));
+        }
         if (!other._small()) {
             iobuf::release_blockref_array(other._bv.refs, other._bv.capacity());
         }
