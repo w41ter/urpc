@@ -102,7 +102,8 @@ int EPoller::AddPollIn(IOHandle* handle) {
     if (epoll_ctl(pollfd_, op, handle->fd(), &ev) < 0) {
         PLOG(FATAL) << "epoll_ctl " << pollfd_ << " new fd " << handle->fd();
     }
-    LOG(INFO) << "AddPollIn " << static_cast<int>(pollfd_) << " fd is " << handle->fd();
+    LOG(INFO) << "AddPollIn " << static_cast<int>(pollfd_) << " fd is "
+              << handle->fd();
 
     IOHandleAccessor(handle).SetPollIn();
 

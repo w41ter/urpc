@@ -101,7 +101,8 @@ int Controller::OnWrite() {
             else if (errno != EAGAIN)
                 assert(false && "unknown error");
             else {
-                if (!pollout_) CurrentPoller()->AddPollOut(this);
+                if (!pollout_)
+                    CurrentPoller()->AddPollOut(this);
                 break;
             }
         }
@@ -281,7 +282,8 @@ int ConnectTransport::StartWrite(std::unique_ptr<IOBuf> buf) {
 }
 
 int ConnectTransport::ConnectIfNot() {
-    if (connected_) return 0;
+    if (connected_)
+        return 0;
 
     if (pollout_)
         // Already register poll out

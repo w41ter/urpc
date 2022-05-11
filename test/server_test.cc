@@ -124,7 +124,8 @@ TEST(EchoTest, Basic) {
                         &HandleResponseClosure::Run);
         stub.Echo(cntl, &req, resp, done);
         while (!exit.load(std::memory_order_acquire)) {
-            LOG(INFO) << "Exit flag is " << exit.load(std::memory_order_relaxed);
+            LOG(INFO) << "Exit flag is "
+                      << exit.load(std::memory_order_relaxed);
             IOContext context(LOOP_ONCE);
         }
         LOG(INFO) << "Client thread exit";

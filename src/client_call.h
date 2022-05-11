@@ -14,8 +14,8 @@
 #pragma once
 
 #include <google/protobuf/service.h>
-
 #include <urpc/controller.h>
+
 #include "iobuf.h"
 
 namespace urpc {
